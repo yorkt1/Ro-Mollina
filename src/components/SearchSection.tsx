@@ -40,17 +40,17 @@ export default function SearchSection() {
     "block text-xs uppercase tracking-[0.2em] text-accent font-semibold mb-1.5";
 
   return (
-    <section className="relative z-20 -mt-8 pb-8">
-      <div className="container px-6">
-        <div className="mx-auto max-w-4xl rounded-sm border border-border bg-card shadow-[0_20px_60px_hsl(var(--foreground)/0.12)] backdrop-blur-xl">
+    <section className="relative z-20 -mt-8 pb-8 overflow-hidden">
+      <div className="container px-4 sm:px-6">
+        <div className="mx-auto max-w-4xl rounded-sm border border-border bg-card shadow-[0_20px_60px_hsl(var(--foreground)/0.12)] backdrop-blur-xl overflow-hidden">
 
           {/* Header tabs */}
-          <div className="flex items-center justify-between border-b border-border px-6 pt-5 pb-0">
-            <div className="flex gap-1">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 sm:px-6 pt-4 sm:pt-5 pb-0 overflow-hidden">
+            <div className="flex gap-1 min-w-0">
               <button
                 type="button"
                 onClick={() => { setPurpose("venda"); setMode("filters"); }}
-                className={`flex items-center gap-2 rounded-t-sm border-b-2 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] transition-colors ${
+                className={`flex items-center gap-1.5 rounded-t-sm border-b-2 px-3 sm:px-4 py-2.5 sm:py-3 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.15em] sm:tracking-[0.18em] transition-colors whitespace-nowrap ${
                   purpose === "venda" && mode === "filters"
                     ? "border-accent text-accent"
                     : "border-transparent text-muted-foreground hover:text-foreground"
@@ -61,7 +61,7 @@ export default function SearchSection() {
               <button
                 type="button"
                 onClick={() => { setPurpose("aluguel"); setMode("filters"); }}
-                className={`flex items-center gap-2 rounded-t-sm border-b-2 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] transition-colors ${
+                className={`flex items-center gap-1.5 rounded-t-sm border-b-2 px-3 sm:px-4 py-2.5 sm:py-3 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.15em] sm:tracking-[0.18em] transition-colors whitespace-nowrap ${
                   purpose === "aluguel" && mode === "filters"
                     ? "border-accent text-accent"
                     : "border-transparent text-muted-foreground hover:text-foreground"
@@ -71,11 +71,11 @@ export default function SearchSection() {
               </button>
             </div>
 
-            <div className="flex gap-1 pb-1">
+            <div className="flex gap-1 pb-1 min-w-0">
               <button
                 type="button"
                 onClick={() => setMode("filters")}
-                className={`flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-[11px] uppercase tracking-[0.15em] transition-colors ${
+                className={`flex items-center gap-1 rounded-sm px-2 sm:px-3 py-1.5 text-[10px] sm:text-[11px] uppercase tracking-[0.12em] sm:tracking-[0.15em] transition-colors whitespace-nowrap ${
                   mode === "filters"
                     ? "bg-accent/10 text-accent"
                     : "text-muted-foreground hover:text-foreground"
@@ -86,23 +86,23 @@ export default function SearchSection() {
               <button
                 type="button"
                 onClick={() => setMode("reference")}
-                className={`flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-[11px] uppercase tracking-[0.15em] transition-colors ${
+                className={`flex items-center gap-1 rounded-sm px-2 sm:px-3 py-1.5 text-[10px] sm:text-[11px] uppercase tracking-[0.12em] sm:tracking-[0.15em] transition-colors whitespace-nowrap ${
                   mode === "reference"
                     ? "bg-accent/10 text-accent"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Hash size={12} /> Referência
+                <Hash size={12} /> Ref.
               </button>
             </div>
           </div>
 
           {/* Body */}
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {mode === "filters" ? (
               <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:flex-wrap lg:flex-nowrap">
                 {/* Tipo */}
-                <div className="flex-1 min-w-[160px]">
+                <div className="flex-1 min-w-0 sm:min-w-[160px]">
                   <label className={labelClass}>Tipo do Imóvel</label>
                   <select value={type} onChange={(e) => setType(e.target.value)} className={selectClass}>
                     <option value="">Selecione</option>
@@ -113,7 +113,7 @@ export default function SearchSection() {
                 </div>
 
                 {/* Valor mínimo */}
-                <div className="flex-1 min-w-[130px]">
+                <div className="flex-1 min-w-0 sm:min-w-[130px]">
                   <label className={labelClass}>Valor mínimo</label>
                   <input
                     type="text"
@@ -125,7 +125,7 @@ export default function SearchSection() {
                 </div>
 
                 {/* Valor máximo */}
-                <div className="flex-1 min-w-[130px]">
+                <div className="flex-1 min-w-0 sm:min-w-[130px]">
                   <label className={labelClass}>Valor máximo</label>
                   <input
                     type="text"
@@ -137,7 +137,7 @@ export default function SearchSection() {
                 </div>
 
                 {/* Bairros */}
-                <div className="flex-1 min-w-[160px]">
+                <div className="flex-1 min-w-0 sm:min-w-[160px]">
                   <label className={labelClass}>Bairros</label>
                   <select value={location} onChange={(e) => setLocation(e.target.value)} className={selectClass}>
                     <option value="">Todos os bairros</option>
