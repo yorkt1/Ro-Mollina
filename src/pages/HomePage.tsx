@@ -297,7 +297,7 @@ export default function HomePage() {
             <img
               src={aboutImg}
               alt="Ro Molina, corretora de imóveis"
-              className="relative mx-auto w-full max-w-md rounded-sm shadow-[0_20px_50px_hsl(var(--foreground)/0.1)]"
+              className="relative mx-auto w-full max-w-md rounded-sm"
               loading="lazy"
             />
           </div>
@@ -323,7 +323,7 @@ export default function HomePage() {
       {/* ─── Contact CTA ─── */}
       <RevealSection className="py-20 lg:py-28 bg-secondary/45" id="contato">
         <div className="container px-6">
-          <div className="grid gap-8 rounded-sm border border-border bg-card p-8 shadow-[0_18px_44px_hsl(var(--foreground)/0.06)] lg:grid-cols-[1fr_auto] lg:items-center lg:p-12">
+          <div className="grid gap-8 rounded-sm border border-border bg-card p-8 lg:grid-cols-[1fr_auto] lg:items-center lg:p-12">
             <div className="space-y-4">
               <p className="text-xs uppercase tracking-[0.28em] text-accent">Contato</p>
               <h2 className="text-3xl leading-tight text-foreground md:text-4xl">Encontrou o imóvel ideal?</h2>

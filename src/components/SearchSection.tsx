@@ -42,7 +42,7 @@ export default function SearchSection() {
   return (
     <section className="relative z-20 -mt-8 pb-8 overflow-hidden">
       <div className="container px-4 sm:px-6">
-        <div className="mx-auto max-w-4xl rounded-sm border border-border bg-card shadow-[0_20px_60px_hsl(var(--foreground)/0.12)] backdrop-blur-xl overflow-hidden">
+        <div className="mx-auto max-w-4xl rounded-sm border border-border bg-card backdrop-blur-xl overflow-hidden">
 
           {/* Header tabs */}
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 sm:px-6 pt-4 sm:pt-5 pb-0 overflow-hidden">

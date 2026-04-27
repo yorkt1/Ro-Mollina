@@ -31,7 +31,7 @@ export default function AdminLeadsPage() {
         <Button variant="crm">Novo lead</Button>
       </div>
 
-      <section className="rounded-sm border border-border bg-card p-6 shadow-[0_12px_34px_hsl(var(--foreground)/0.05)]">
+      <section className="rounded-sm border border-border bg-card p-6">
         <div className="mb-6 space-y-2">
           <p className="text-xs uppercase tracking-[0.24em] text-accent">Kanban comercial</p>
           <h2 className="text-2xl text-foreground">Pipeline por etapa</h2>
@@ -39,7 +39,7 @@ export default function AdminLeadsPage() {
         <LeadsPipeline />
       </section>
 
-      <section className="overflow-hidden rounded-sm border border-border bg-card shadow-[0_18px_44px_hsl(var(--foreground)/0.05)]">
+      <section className="overflow-hidden rounded-sm border border-border bg-card">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-accent" />

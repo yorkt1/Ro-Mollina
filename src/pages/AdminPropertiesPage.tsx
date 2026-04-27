@@ -706,14 +706,14 @@ export default function AdminPropertiesPage() {
           { label: "Aluguéis", value: `${properties.filter((p) => p.purpose === "aluguel").length}` },
           { label: "Destaques", value: `${properties.filter((p) => p.featured).length}` },
         ].map((item) => (
-          <div key={item.label} className="rounded-sm border border-border bg-card p-6 shadow-[0_12px_34px_hsl(var(--foreground)/0.05)]">
+          <div key={item.label} className="rounded-sm border border-border bg-card p-6">
             <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">{item.label}</p>
             <p className="mt-3 font-serif text-4xl text-foreground">{item.value}</p>
           </div>
         ))}
       </div>
 
-      <div className="overflow-hidden rounded-sm border border-border bg-card shadow-[0_18px_44px_hsl(var(--foreground)/0.05)]">
+      <div className="overflow-hidden rounded-sm border border-border bg-card">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-accent" />

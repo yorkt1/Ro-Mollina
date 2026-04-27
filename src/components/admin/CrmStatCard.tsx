@@ -12,7 +12,7 @@ export default function CrmStatCard({
   helper: string;
 }) {
   return (
-    <div className="rounded-sm border border-border bg-card p-6 shadow-[0_12px_34px_hsl(var(--foreground)/0.05)]">
+    <div className="rounded-sm border border-border bg-card p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">{label}</p>

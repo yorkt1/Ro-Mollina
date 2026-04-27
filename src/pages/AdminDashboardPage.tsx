@@ -33,7 +33,7 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
-        <section className="space-y-5 rounded-sm border border-border bg-card p-6 shadow-[0_12px_34px_hsl(var(--foreground)/0.05)]">
+        <section className="space-y-5 rounded-sm border border-border bg-card p-6">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-[0.24em] text-accent">Pipeline</p>
             <h2 className="text-2xl text-foreground">Funil visual</h2>
@@ -41,7 +41,7 @@ export default function AdminDashboardPage() {
           <LeadsPipeline />
         </section>
 
-        <section className="space-y-5 rounded-sm border border-border bg-card p-6 shadow-[0_12px_34px_hsl(var(--foreground)/0.05)]">
+        <section className="space-y-5 rounded-sm border border-border bg-card p-6">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-[0.24em] text-accent">Atividade recente</p>
             <h2 className="text-2xl text-foreground">Movimentações</h2>
@@ -64,7 +64,7 @@ export default function AdminDashboardPage() {
       </div>
 
       <section className="grid gap-6 xl:grid-cols-2">
-        <div className="rounded-sm border border-border bg-card p-6 shadow-[0_12px_34px_hsl(var(--foreground)/0.05)]">
+        <div className="rounded-sm border border-border bg-card p-6">
           <p className="text-xs uppercase tracking-[0.24em] text-accent">Mix do portfólio</p>
           <div className="mt-6 space-y-4">
             {[
@@ -84,7 +84,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-sm border border-border bg-card p-6 shadow-[0_12px_34px_hsl(var(--foreground)/0.05)]">
+        <div className="rounded-sm border border-border bg-card p-6">
           <p className="text-xs uppercase tracking-[0.24em] text-accent">Etapas do funil</p>
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             {leadStages.map((stage) => (

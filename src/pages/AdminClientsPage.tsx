@@ -13,7 +13,7 @@ export default function AdminClientsPage() {
 
       <div className="grid gap-6 xl:grid-cols-3">
         {clients.map((client) => (
-          <article key={client.id} className="rounded-sm border border-border bg-card p-6 shadow-[0_12px_34px_hsl(var(--foreground)/0.05)]">
+          <article key={client.id} className="rounded-sm border border-border bg-card p-6">
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-[0.24em] text-accent">{client.status}</p>
               <h2 className="text-2xl text-foreground">{client.name}</h2>

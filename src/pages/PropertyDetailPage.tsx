@@ -456,7 +456,7 @@ export default function PropertyDetailPage() {
             {/* Image gallery */}
             <div className="space-y-3">
               <div
-                className="relative overflow-hidden rounded-sm bg-card shadow-[0_18px_46px_hsl(var(--foreground)/0.08)] cursor-zoom-in"
+                className="relative overflow-hidden rounded-sm bg-card cursor-zoom-in"
                 onClick={() => { setGalleryIndex(selectedImage); setGalleryOpen(true); }}
               >
                 {property.images[selectedImage] ? (
@@ -501,7 +501,7 @@ export default function PropertyDetailPage() {
             {property.videoUrl && (
               <div className="space-y-3">
                 <p className="text-xs uppercase tracking-[0.28em] text-accent">Vídeo do imóvel</p>
-                <div className="relative aspect-video overflow-hidden rounded-sm bg-card shadow-lg">
+                <div className="relative aspect-video overflow-hidden rounded-sm bg-card border border-border">
                   <iframe
                     src={`https://www.youtube.com/embed/${property.videoUrl.replace(/.*(?:v=|youtu\.be\/)([^&]+).*/, "$1")}`}
                     title={property.title}
@@ -612,7 +612,7 @@ export default function PropertyDetailPage() {
             </div>
 
             {/* Key specs */}
-            <div className="grid grid-cols-2 gap-3 rounded-sm border border-border bg-card p-4 shadow-[0_12px_34px_hsl(var(--foreground)/0.05)]">
+            <div className="grid grid-cols-2 gap-3 rounded-sm border border-border bg-card p-4">
               {property.type !== "terreno" && (
                 <>
                   <div className="space-y-1">
@@ -661,7 +661,7 @@ export default function PropertyDetailPage() {
             </div>
 
             {/* Detailed info table */}
-            <div className="rounded-sm border border-border bg-card p-5 shadow-[0_12px_34px_hsl(var(--foreground)/0.05)]">
+            <div className="rounded-sm border border-border bg-card p-5">
               <p className="mb-3 text-xs uppercase tracking-[0.28em] text-accent">Ficha técnica</p>
               <InfoRow label="Código" value={property.refCode} />
               <InfoRow label="Zona" value={property.zone} />
@@ -690,7 +690,7 @@ export default function PropertyDetailPage() {
             </button>
 
             {/* CTA */}
-            <div className="rounded-sm border border-border bg-navy-deep p-7 text-primary-foreground shadow-[0_18px_42px_hsl(var(--navy-deep)/0.2)]">
+            <div className="rounded-sm border border-border bg-navy-deep p-7 text-primary-foreground">
               <p className="text-xs uppercase tracking-[0.28em] text-accent">Atendimento</p>
               <h2 className="mt-3 text-2xl leading-tight">Fale com a Ro sobre este imóvel.</h2>
               <p className="mt-3 text-sm text-primary-foreground/66">

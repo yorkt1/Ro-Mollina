@@ -19,7 +19,7 @@ export default function LeadsPipeline() {
         const stageLeads = leads.filter((lead) => lead.stage === stage.key);
 
         return (
-          <div key={stage.key} className="rounded-sm border border-border bg-card p-4 shadow-[0_10px_30px_hsl(var(--foreground)/0.04)]">
+          <div key={stage.key} className="rounded-sm border border-border bg-card p-4">
             <div className="mb-4 flex items-center justify-between gap-3">
               <p className="text-sm font-medium text-foreground">{stage.label}</p>
               <span className="rounded-full bg-secondary px-2.5 py-1 text-xs text-muted-foreground">

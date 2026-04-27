@@ -111,13 +111,11 @@
   }
 
   .card-hover {
-    @apply transition-[box-shadow,transform] duration-300;
-    box-shadow: 0 2px 8px hsl(220 20% 13% / 0.06);
+    @apply transition-colors duration-300;
   }
 
   .card-hover:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 16px 36px hsl(220 20% 13% / 0.12);
+    @apply bg-accent/5;
   }
 
   .nav-link {

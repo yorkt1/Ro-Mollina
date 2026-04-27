@@ -222,7 +222,7 @@ export default function AdminHighlightsPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-3">
           {highlights.map((h) => (
-            <div key={h.id} className="overflow-hidden rounded-sm border border-border bg-card shadow-[0_12px_34px_hsl(var(--foreground)/0.05)]">
+            <div key={h.id} className="overflow-hidden rounded-sm border border-border bg-card">
               <div className="relative aspect-video overflow-hidden">
                 {h.image ? (
                   <img src={h.image} alt={h.title} className="h-full w-full object-cover" />

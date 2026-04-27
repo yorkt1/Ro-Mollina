@@ -223,7 +223,7 @@ export default function AdminYouTubePage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-3">
           {videos.map((v) => (
-            <div key={v.id} className="overflow-hidden rounded-sm border border-border bg-card shadow-[0_12px_34px_hsl(var(--foreground)/0.05)]">
+            <div key={v.id} className="overflow-hidden rounded-sm border border-border bg-card">
               <div className="relative aspect-video overflow-hidden">
                 {v.thumbnail ? (
                   <img src={v.thumbnail} alt={v.title} className="h-full w-full object-cover" />
