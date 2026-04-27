@@ -1,0 +1,166 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* ─────────────────────────────────────────────────────────────────
+     PALETA ÚNICA — tema escuro fixo, sem modo claro
+     Três cores principais:
+       • Fundo:  Azul Marinho Profundo  #0D1B2A
+       • Texto:  Off-white Gelo         #F0EDE8
+       • Accent: Dourado Camelo Suave   #B8955A
+  ───────────────────────────────────────────────────────────────── */
+  :root {
+    /* Base */
+    --background: 210 43% 11%;        /* #0D1B2A — marinho profundo */
+    --foreground: 33 18% 93%;         /* #F0EDE8 — gelo/off-white   */
+
+    /* Cards: marinho ligeiramente mais claro */
+    --card: 210 38% 14%;              /* #111E2E */
+    --card-foreground: 33 18% 93%;
+
+    --popover: 210 38% 14%;
+    --popover-foreground: 33 18% 93%;
+
+    /* Primary = marinho — usado em botões sólidos, nav bg, etc. */
+    --primary: 210 43% 11%;           /* #0D1B2A */
+    --primary-foreground: 33 18% 93%;
+
+    /* Secondary = camada intermediária suave */
+    --secondary: 210 35% 18%;         /* #152233 */
+    --secondary-foreground: 33 18% 80%;
+
+    /* Muted = textos e superfícies discretas */
+    --muted: 210 30% 20%;             /* #172538 */
+    --muted-foreground: 33 12% 60%;   /* #9A9690 */
+
+    /* Accent = dourado camelo suave #B8955A */
+    --accent: 36 40% 53%;             /* #B8955A */
+    --accent-foreground: 210 43% 9%;  /* marinho escuro sobre dourado */
+
+    --destructive: 0 60% 50%;
+    --destructive-foreground: 33 18% 93%;
+
+    --border: 210 30% 22%;            /* linha sutil marinho */
+    --input: 210 30% 22%;
+    --ring: 36 40% 53%;               /* foco = dourado */
+
+    --radius: 0.5rem;
+
+    /* ── Tokens de marca (compatibilidade com classes .text-navy, etc.) */
+    --gold: 36 40% 53%;               /* #B8955A */
+    --gold-light: 36 35% 68%;         /* versão mais clara do dourado */
+    --navy: 210 43% 11%;              /* #0D1B2A */
+    --navy-deep: 210 50% 8%;          /* #081422 */
+    --navy-mid: 210 38% 16%;          /* #122030 */
+    --navy-light: 210 28% 30%;        /* #2E4560 */
+
+    /* Hero overlay */
+    --hero-overlay: 210 50% 6%;
+
+    /* Hero gradient */
+    --hero-grad-start: #0D1B2A;
+    --hero-grad-end: #122030;
+
+    /* Sidebar (admin) */
+    --sidebar-background: 210 43% 9%;
+    --sidebar-foreground: 33 18% 80%;
+    --sidebar-primary: 36 40% 53%;
+    --sidebar-primary-foreground: 210 43% 9%;
+    --sidebar-accent: 210 35% 18%;
+    --sidebar-accent-foreground: 33 18% 80%;
+    --sidebar-border: 210 30% 20%;
+    --sidebar-ring: 36 40% 53%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-serif;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+    overflow-wrap: break-word;
+  }
+}
+
+@layer components {
+  .section-reveal {
+    @apply opacity-0 translate-y-5;
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                filter 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    filter: blur(4px);
+  }
+
+  .section-reveal.revealed {
+    @apply opacity-100 translate-y-0;
+    filter: blur(0px);
+  }
+
+  .card-hover {
+    @apply transition-[box-shadow,transform] duration-300;
+    box-shadow: 0 2px 8px hsl(220 20% 13% / 0.06);
+  }
+
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 36px hsl(220 20% 13% / 0.12);
+  }
+
+  .nav-link {
+    @apply text-primary-foreground/70 hover:text-primary-foreground transition-colors duration-200
+           relative after:content-[''] after:absolute after:bottom-[-0.35rem] after:left-0
+           after:w-full after:h-[1px] after:bg-accent after:scale-x-0
+           after:origin-right after:transition-transform after:duration-300;
+  }
+
+  .nav-link:hover::after,
+  .nav-link.active::after {
+    @apply scale-x-100 origin-left;
+  }
+
+  .gold-divider {
+    @apply h-[2px] w-16 bg-accent;
+  }
+}
+
+/* ── Hero keyframe (used via inline style animation) ── */
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0px);
+  }
+}
+/* ── Gallery lightbox keyframe ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Scrollbar hide utility ── */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
