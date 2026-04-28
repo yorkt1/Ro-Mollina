@@ -227,7 +227,7 @@ export default function HomePage() {
 
       {/* ─── Exclusividades ─── */}
       {!isLoading && exclusives.length > 0 && (
-        <RevealSection className="py-20 lg:py-28 bg-navy-deep">
+        <RevealSection className="py-20 lg:py-28 bg-[hsl(var(--navy-deep))]">
           <div className="container space-y-10 px-6">
             <SectionHeading
               eyebrow="Exclusividades"

@@ -118,11 +118,11 @@ export default function PropertiesPage({
     <div className="min-h-screen bg-background">
       <Header />
 
-      <section className="bg-navy-deep pt-28 pb-16">
+      <section className="bg-muted pt-28 pb-16 border-b border-border">
         <div className="container space-y-4 px-6 text-center">
-          <p className="text-xs uppercase tracking-[0.28em] font-semibold text-navy">Portfólio</p>
-          <h1 className="text-3xl text-primary-foreground sm:text-4xl md:text-5xl">{pageTitle}</h1>
-          <p className="mx-auto max-w-2xl text-base leading-relaxed text-primary-foreground/90 sm:text-lg">{pageSubtitle}</p>
+          <p className="text-xs uppercase tracking-[0.28em] font-semibold text-accent">Portfólio</p>
+          <h1 className="text-3xl text-foreground sm:text-4xl md:text-5xl">{pageTitle}</h1>
+          <p className="mx-auto max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">{pageSubtitle}</p>
         </div>
       </section>
 

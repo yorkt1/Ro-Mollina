@@ -593,7 +593,7 @@ export default function PropertyDetailPage() {
                   {propertyTypeLabel(property.type)}
                 </span>
                 {property.tag && (
-                  <span className="rounded-sm bg-navy-deep/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-navy">
+                  <span className="rounded-sm bg-primary/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-foreground">
                     {property.tag}
                   </span>
                 )}
@@ -690,10 +690,10 @@ export default function PropertyDetailPage() {
             </button>
 
             {/* CTA */}
-            <div className="rounded-sm border border-border bg-navy-deep p-7 text-primary-foreground">
+            <div className="rounded-sm border border-border bg-[hsl(var(--navy-deep))] p-7 text-white">
               <p className="text-xs uppercase tracking-[0.28em] text-accent">Atendimento</p>
-              <h2 className="mt-3 text-2xl leading-tight">Fale com a Ro sobre este imóvel.</h2>
-              <p className="mt-3 text-sm text-primary-foreground/66">
+              <h2 className="mt-3 text-2xl leading-tight text-white">Fale com a Ro sobre este imóvel.</h2>
+              <p className="mt-3 text-sm text-white/66">
                 Mensagem pré-preenchida para agilizar o atendimento.
               </p>
               <Button asChild variant="luxury" size="lg" className="mt-5 w-full">

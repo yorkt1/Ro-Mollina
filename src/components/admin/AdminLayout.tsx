@@ -62,15 +62,15 @@ export default function AdminLayout() {
       </div>
 
       <div className="grid min-h-screen md:grid-cols-[260px_1fr]">
-        {/* Sidebar */}
-        <aside className="hidden border-r border-border bg-navy-deep px-6 py-8 text-primary-foreground md:flex md:flex-col">
+        {/* Sidebar — keeps dark navy for admin panel identity */}
+        <aside className="hidden border-r border-border bg-[hsl(var(--navy-deep))] px-6 py-8 text-white md:flex md:flex-col">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-[0.28em] text-accent">Painel admin</p>
-            <Link to="/admin/imoveis" className="font-serif text-3xl leading-none">
+            <Link to="/admin/imoveis" className="font-serif text-3xl leading-none text-white">
               Ro CRM
             </Link>
             {user && (
-              <p className="text-xs text-primary-foreground/50 truncate">{user.email}</p>
+              <p className="text-xs text-white/50 truncate">{user.email}</p>
             )}
           </div>
 
@@ -82,8 +82,8 @@ export default function AdminLayout() {
                 className={({ isActive }) =>
                   `flex items-center gap-3 rounded-sm px-4 py-3 text-sm transition-colors ${
                     isActive
-                      ? "bg-primary-foreground/10 text-primary-foreground"
-                      : "text-primary-foreground/65 hover:bg-primary-foreground/6 hover:text-primary-foreground"
+                      ? "bg-white/10 text-white"
+                      : "text-white/65 hover:bg-white/6 hover:text-white"
                   }`
                 }
               >
@@ -94,7 +94,7 @@ export default function AdminLayout() {
           </nav>
 
           <div className="mt-auto space-y-3">
-            <div className="rounded-sm border border-primary-foreground/10 bg-primary-foreground/5 p-4">
+            <div className="rounded-sm border border-white/10 bg-white/5 p-4">
               <Button asChild variant="luxury" size="sm" className="w-full">
                 <Link to="/">← Voltar ao site</Link>
               </Button>

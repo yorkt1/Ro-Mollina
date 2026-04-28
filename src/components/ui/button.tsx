@@ -16,10 +16,10 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         luxury: "bg-accent text-primary shadow-[0_10px_30px_hsl(var(--accent)/0.18)] hover:bg-accent/90 hover:shadow-[0_14px_34px_hsl(var(--accent)/0.24)]",
-        luxuryOutline: "border border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10",
+        luxuryOutline: "border border-white/30 bg-transparent text-white hover:bg-white/10",
         crm: "bg-primary text-primary-foreground shadow-[0_12px_28px_hsl(var(--primary)/0.18)] hover:bg-primary/90",
         crmSecondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90",
-        ghostLight: "text-primary-foreground hover:bg-primary-foreground/10",
+        ghostLight: "text-white hover:bg-white/10",
       },
       size: {
         default: "h-10 px-4 py-2",

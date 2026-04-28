@@ -26,7 +26,7 @@ export default function SocialIcons({ className = "", variant = "dark" }: Social
           className={`flex h-9 w-9 items-center justify-center rounded-sm border transition-all duration-200 hover:scale-105 ${
             isLight
               ? "border-slate-300 bg-white/60 text-slate-500 shadow-sm hover:border-[#d4a84b]/60 hover:text-[#d4a84b] hover:shadow-md"
-              : "border-primary-foreground/20 text-primary-foreground/60 hover:border-accent hover:text-accent"
+              : "border-white/20 text-white/60 hover:border-accent hover:text-accent"
           }`}
         >
           <s.icon size={16} />

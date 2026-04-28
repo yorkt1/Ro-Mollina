@@ -36,13 +36,13 @@ export default function AdminLoginPage() {
 
   return (
     <div className="grid min-h-screen lg:grid-cols-[0.95fr_1.05fr]">
-      <section className="relative hidden overflow-hidden bg-navy-deep lg:block">
+      <section className="relative hidden overflow-hidden bg-[hsl(var(--navy-deep))] lg:block">
         <img src={heroBg} alt="Painel premium Ro Molina" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-[hsl(var(--hero-overlay)/0.76)]" />
-        <div className="relative z-10 flex h-full flex-col justify-between p-10 text-primary-foreground">
+        <div className="relative z-10 flex h-full flex-col justify-between p-10 text-white">
           <div>
             <p className="text-xs uppercase tracking-[0.28em] text-accent">Painel administrativo</p>
-            <h1 className="mt-6 max-w-lg text-5xl leading-[1.04]">Gestão completa do seu portfólio imobiliário.</h1>
+            <h1 className="mt-6 max-w-lg text-5xl leading-[1.04] text-white">Gestão completa do seu portfólio imobiliário.</h1>
           </div>
           <div className="grid gap-4">
             {[
@@ -50,9 +50,9 @@ export default function AdminLoginPage() {
               "CRUD completo de imóveis com upload de fotos",
               "Autenticação segura com Supabase",
             ].map((item) => (
-              <div key={item} className="flex items-center gap-3 rounded-sm border border-primary-foreground/10 bg-primary-foreground/6 px-4 py-3 backdrop-blur-sm">
+              <div key={item} className="flex items-center gap-3 rounded-sm border border-white/10 bg-white/6 px-4 py-3 backdrop-blur-sm">
                 <ShieldCheck size={18} className="text-accent" />
-                <span className="text-sm text-primary-foreground/74">{item}</span>
+                <span className="text-sm text-white/74">{item}</span>
               </div>
             ))}
           </div>

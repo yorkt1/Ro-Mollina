@@ -6,72 +6,72 @@
 
 @layer base {
   /* ─────────────────────────────────────────────────────────────────
-     PALETA ÚNICA — tema escuro fixo, sem modo claro
+     PALETA CLARA — tema claro premium
      Três cores principais:
-       • Fundo:  Azul Marinho Profundo  #0D1B2A
-       • Texto:  Off-white Gelo         #F0EDE8
-       • Accent: Dourado Camelo Suave   #B8955A
+       • Fundo:  Branco Gelo           #F5F5F5
+       • Texto:  Cinza Escuro/Marinho  #1A2233
+       • Accent: Dourado Camelo Suave  #B8955A
   ───────────────────────────────────────────────────────────────── */
   :root {
-    /* Base */
-    --background: 210 43% 11%;        /* #0D1B2A — marinho profundo */
-    --foreground: 33 18% 93%;         /* #F0EDE8 — gelo/off-white   */
+    /* Base — branco gelo */
+    --background: 0 0% 96%;           /* #F5F5F5 — branco gelo */
+    --foreground: 216 33% 16%;        /* #1A2233 — marinho escuro para texto */
 
-    /* Cards: marinho ligeiramente mais claro */
-    --card: 210 38% 14%;              /* #111E2E */
-    --card-foreground: 33 18% 93%;
+    /* Cards: branco puro */
+    --card: 0 0% 100%;                /* #FFFFFF */
+    --card-foreground: 216 33% 16%;   /* #1A2233 */
 
-    --popover: 210 38% 14%;
-    --popover-foreground: 33 18% 93%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 216 33% 16%;
 
-    /* Primary = marinho — usado em botões sólidos, nav bg, etc. */
-    --primary: 210 43% 11%;           /* #0D1B2A */
-    --primary-foreground: 33 18% 93%;
+    /* Primary = marinho escuro — botões sólidos, nav */
+    --primary: 216 43% 14%;           /* #0D1B2A */
+    --primary-foreground: 0 0% 96%;   /* branco gelo sobre marinho */
 
-    /* Secondary = camada intermediária suave */
-    --secondary: 210 35% 18%;         /* #152233 */
-    --secondary-foreground: 33 18% 80%;
+    /* Secondary = cinza claro — seções alternadas */
+    --secondary: 220 14% 91%;         /* #E5E7EB */
+    --secondary-foreground: 216 33% 16%;
 
-    /* Muted = textos e superfícies discretas */
-    --muted: 210 30% 20%;             /* #172538 */
-    --muted-foreground: 33 12% 60%;   /* #9A9690 */
+    /* Muted = superfícies neutras */
+    --muted: 217 19% 93%;             /* #F2F4F7 */
+    --muted-foreground: 220 9% 46%;   /* #6B7280 — cinza médio */
 
     /* Accent = dourado camelo suave #B8955A */
     --accent: 36 40% 53%;             /* #B8955A */
-    --accent-foreground: 210 43% 9%;  /* marinho escuro sobre dourado */
+    --accent-foreground: 216 43% 9%;  /* marinho escuro sobre dourado */
 
     --destructive: 0 60% 50%;
-    --destructive-foreground: 33 18% 93%;
+    --destructive-foreground: 0 0% 96%;
 
-    --border: 210 30% 22%;            /* linha sutil marinho */
-    --input: 210 30% 22%;
+    --border: 220 13% 87%;            /* #DCDFE6 — borda sutil clara */
+    --input: 220 13% 87%;
     --ring: 36 40% 53%;               /* foco = dourado */
 
     --radius: 0.5rem;
 
-    /* ── Tokens de marca (compatibilidade com classes .text-navy, etc.) */
+    /* ── Tokens de marca */
     --gold: 36 40% 53%;               /* #B8955A */
     --gold-light: 36 35% 68%;         /* versão mais clara do dourado */
-    --navy: 210 43% 11%;              /* #0D1B2A */
-    --navy-deep: 210 50% 8%;          /* #081422 */
-    --navy-mid: 210 38% 16%;          /* #122030 */
-    --navy-light: 210 28% 30%;        /* #2E4560 */
+    --navy: 216 43% 14%;              /* #0D1B2A */
+    --navy-deep: 216 43% 14%;         /* mesmo marinho para compatibilidade */
+    --navy-mid: 216 30% 22%;          /* variação média */
+    --navy-light: 216 20% 36%;        /* variação clara */
 
     /* Hero overlay */
-    --hero-overlay: 210 50% 6%;
+    --hero-overlay: 216 43% 10%;
 
     /* Hero gradient */
-    --hero-grad-start: #0D1B2A;
-    --hero-grad-end: #122030;
+    --hero-grad-start: #F5F5F5;
+    --hero-grad-end: #F2F4F7;
 
-    /* Sidebar (admin) */
-    --sidebar-background: 210 43% 9%;
-    --sidebar-foreground: 33 18% 80%;
+    /* Sidebar (admin) — mantém dark para contraste */
+    --sidebar-background: 216 43% 11%;
+    --sidebar-foreground: 220 14% 85%;
     --sidebar-primary: 36 40% 53%;
-    --sidebar-primary-foreground: 210 43% 9%;
-    --sidebar-accent: 210 35% 18%;
-    --sidebar-accent-foreground: 33 18% 80%;
-    --sidebar-border: 210 30% 20%;
+    --sidebar-primary-foreground: 216 43% 9%;
+    --sidebar-accent: 216 35% 18%;
+    --sidebar-accent-foreground: 220 14% 85%;
+    --sidebar-border: 216 30% 20%;
     --sidebar-ring: 36 40% 53%;
   }
 }
@@ -119,7 +119,7 @@
   }
 
   .nav-link {
-    @apply text-primary-foreground/70 hover:text-primary-foreground transition-colors duration-200
+    @apply text-foreground/70 hover:text-foreground transition-colors duration-200
            relative after:content-[''] after:absolute after:bottom-[-0.35rem] after:left-0
            after:w-full after:h-[1px] after:bg-accent after:scale-x-0
            after:origin-right after:transition-transform after:duration-300;

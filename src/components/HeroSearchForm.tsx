@@ -57,16 +57,16 @@ export default function HeroSearchForm({ variant = "light" }: HeroSearchFormProp
 
   // Dark theme (original - for dark backgrounds)
   const darkTheme = {
-    container: "bg-navy-deep/88 border border-primary-foreground/20",
+    container: "bg-[hsl(var(--navy-deep)/0.88)] border border-white/20",
     toggle: {
-      base: "text-primary-foreground",
+      base: "text-white",
       active: "bg-accent text-primary",
-      inactive: "bg-transparent text-primary-foreground/70 hover:text-primary-foreground",
+      inactive: "bg-transparent text-white/70 hover:text-white",
     },
-    select: "h-11 w-full rounded-sm border border-primary-foreground/20 bg-transparent px-4 text-sm text-primary-foreground outline-none transition-colors focus:border-accent appearance-none cursor-pointer [&>option]:bg-navy-deep [&>option]:text-primary-foreground",
-    input: "h-11 w-full rounded-sm border border-primary-foreground/20 bg-transparent px-4 text-sm text-primary-foreground placeholder:text-primary-foreground/40 outline-none transition-colors focus:border-accent",
+    select: "h-11 w-full rounded-sm border border-white/20 bg-transparent px-4 text-sm text-white outline-none transition-colors focus:border-accent appearance-none cursor-pointer [&>option]:bg-[#0d1b2a] [&>option]:text-white",
+    input: "h-11 w-full rounded-sm border border-white/20 bg-transparent px-4 text-sm text-white placeholder:text-white/40 outline-none transition-colors focus:border-accent",
     label: "text-xs uppercase tracking-[0.2em] text-accent font-medium",
-    link: "text-primary-foreground/50 hover:text-accent",
+    link: "text-white/50 hover:text-accent",
     linkHover: "text-accent",
   };
 

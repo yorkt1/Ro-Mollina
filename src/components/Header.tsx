@@ -55,7 +55,7 @@ function NavDropdown({
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={`nav-link flex items-center gap-1 text-[13px] uppercase tracking-[0.2em] ${
-          isActive ? "active text-primary-foreground" : ""
+          isActive ? "active text-foreground" : ""
         }`}
       >
         {label}
@@ -67,7 +67,7 @@ function NavDropdown({
 
       {/* Dropdown panel */}
       <div
-        className={`absolute left-0 top-full z-50 min-w-[200px] overflow-hidden rounded-md border border-primary-foreground/10 bg-[hsl(var(--navy-deep))] shadow-2xl transition-all duration-200 ${
+        className={`absolute left-0 top-full z-50 min-w-[200px] overflow-hidden rounded-md border border-border bg-card shadow-xl shadow-slate-200/60 transition-all duration-200 ${
           open
             ? "pointer-events-auto translate-y-1 opacity-100"
             : "pointer-events-none translate-y-0 opacity-0"
@@ -76,7 +76,7 @@ function NavDropdown({
         {/* Link to full page */}
         <Link
           to={to}
-          className="flex items-center gap-2 border-b border-primary-foreground/10 px-4 py-3 text-[12px] uppercase tracking-[0.18em] text-accent transition-colors hover:bg-accent/10"
+          className="flex items-center gap-2 border-b border-border px-4 py-3 text-[12px] uppercase tracking-[0.18em] text-accent transition-colors hover:bg-accent/10"
           onClick={() => setOpen(false)}
         >
           Ver todos
@@ -87,7 +87,7 @@ function NavDropdown({
           <Link
             key={item.to}
             to={item.to}
-            className="flex items-center gap-3 px-4 py-3 text-[13px] text-primary-foreground/75 transition-colors hover:bg-accent/10 hover:text-primary-foreground"
+            className="flex items-center gap-3 px-4 py-3 text-[13px] text-foreground/75 transition-colors hover:bg-accent/10 hover:text-foreground"
             onClick={() => setOpen(false)}
           >
             <item.icon size={14} className="text-accent/70 shrink-0" />
@@ -132,15 +132,15 @@ export default function Header() {
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
         scrolled
-          ? "bg-[hsl(var(--navy-deep))] backdrop-blur-md shadow-[0_14px_34px_hsl(var(--navy-deep)/0.35)]"
-          : "bg-[hsl(var(--navy-deep)/0.60)] backdrop-blur-sm"
+          ? "bg-white/95 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.08)] border-b border-border"
+          : "bg-white/70 backdrop-blur-sm"
       }`}
     >
       <nav className="container flex items-center justify-between px-6 py-4 lg:py-5">
         {/* Logo */}
         <Link
           to="/"
-          className="font-serif text-xl tracking-wide text-primary-foreground lg:text-2xl"
+          className="font-serif text-xl tracking-wide text-foreground lg:text-2xl"
         >
           Ro Molina
         </Link>
@@ -153,7 +153,7 @@ export default function Header() {
               <a
                 href="/"
                 className={`nav-link text-[13px] uppercase tracking-[0.2em] ${
-                  isActive("/") ? "active text-primary-foreground" : ""
+                  isActive("/") ? "active text-foreground" : ""
                 }`}
               >
                 {t.home}
@@ -201,7 +201,7 @@ export default function Header() {
             </li>
           </ul>
 
-          <div className="h-5 w-px bg-primary-foreground/15" />
+          <div className="h-5 w-px bg-foreground/15" />
 
           <div className="flex items-center gap-4">
             <a
@@ -219,7 +219,7 @@ export default function Header() {
                 type="button"
                 onClick={() => setLangOpen((v) => !v)}
                 id="lang-selector-btn"
-                className="flex items-center gap-1.5 rounded-sm border border-primary-foreground/20 bg-primary-foreground/8 px-3 py-1.5 text-[12px] uppercase tracking-[0.18em] text-primary-foreground/80 transition-all hover:border-accent/60 hover:text-primary-foreground"
+                className="flex items-center gap-1.5 rounded-sm border border-border bg-background px-3 py-1.5 text-[12px] uppercase tracking-[0.18em] text-foreground/70 transition-all hover:border-accent/60 hover:text-foreground"
               >
                 <img src={languageLabels[lang].flag} alt={languageLabels[lang].label} className="h-4 w-5 rounded-[2px] object-cover" />
                 <span>{languageLabels[lang].label}</span>
@@ -230,16 +230,16 @@ export default function Header() {
               </button>
 
               {langOpen && (
-                <div className="absolute right-0 top-full mt-2 min-w-[140px] overflow-hidden rounded-sm border border-primary-foreground/10 bg-[hsl(var(--navy-deep))] shadow-xl">
+                <div className="absolute right-0 top-full mt-2 min-w-[140px] overflow-hidden rounded-sm border border-border bg-card shadow-xl">
                   {(["pt", "en", "es"] as Language[]).map((l) => (
                     <button
                       key={l}
                       type="button"
                       onClick={() => { setLang(l); setLangOpen(false); }}
-                      className={`flex w-full items-center gap-2 px-4 py-2.5 text-left text-[12px] uppercase tracking-[0.15em] transition-colors hover:bg-accent/15 ${
+                      className={`flex w-full items-center gap-2 px-4 py-2.5 text-left text-[12px] uppercase tracking-[0.15em] transition-colors hover:bg-accent/10 ${
                         lang === l
                           ? "text-accent"
-                          : "text-primary-foreground/70 hover:text-primary-foreground"
+                          : "text-foreground/70 hover:text-foreground"
                       }`}
                     >
                       <img src={languageLabels[l].flag} alt={languageLabels[l].label} className="h-4 w-5 rounded-[2px] object-cover" />
@@ -261,7 +261,7 @@ export default function Header() {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="text-primary-foreground lg:hidden"
+          className="text-foreground lg:hidden"
           aria-label="Abrir menu"
         >
           {open ? <X size={24} /> : <Menu size={24} />}
@@ -270,7 +270,7 @@ export default function Header() {
 
       {/* ── Mobile drawer ── */}
       {open && (
-        <div className="border-t border-primary-foreground/10 bg-navy-deep/98 px-6 py-6 backdrop-blur-md lg:hidden">
+        <div className="border-t border-border bg-white/98 px-6 py-6 backdrop-blur-md lg:hidden">
           <div className="flex flex-col gap-1">
             {[
               { label: t.home,    to: "/"          },
@@ -280,7 +280,7 @@ export default function Header() {
               <a
                 key={link.to}
                 href={link.to}
-                className="py-2.5 text-sm uppercase tracking-[0.2em] text-primary-foreground/72 transition-colors hover:text-primary-foreground"
+                className="py-2.5 text-sm uppercase tracking-[0.2em] text-foreground/70 transition-colors hover:text-foreground"
               >
                 {link.label}
               </a>
@@ -288,7 +288,7 @@ export default function Header() {
 
             {/* Comprar expandable */}
             <details className="group">
-              <summary className="flex cursor-pointer list-none items-center justify-between py-2.5 text-sm uppercase tracking-[0.2em] text-primary-foreground/72">
+              <summary className="flex cursor-pointer list-none items-center justify-between py-2.5 text-sm uppercase tracking-[0.2em] text-foreground/70">
                 {t.buy}
                 <ChevronDown size={14} className="transition-transform group-open:rotate-180" />
               </summary>
@@ -297,7 +297,7 @@ export default function Header() {
                   <Link
                     key={item.to}
                     to={item.to}
-                    className="py-2 text-[13px] text-primary-foreground/55 hover:text-primary-foreground"
+                    className="py-2 text-[13px] text-foreground/55 hover:text-foreground"
                     onClick={() => setOpen(false)}
                   >
                     {item.label}
@@ -308,7 +308,7 @@ export default function Header() {
 
             {/* Alugar expandable */}
             <details className="group">
-              <summary className="flex cursor-pointer list-none items-center justify-between py-2.5 text-sm uppercase tracking-[0.2em] text-primary-foreground/72">
+              <summary className="flex cursor-pointer list-none items-center justify-between py-2.5 text-sm uppercase tracking-[0.2em] text-foreground/70">
                 {t.rent}
                 <ChevronDown size={14} className="transition-transform group-open:rotate-180" />
               </summary>
@@ -317,7 +317,7 @@ export default function Header() {
                   <Link
                     key={item.to}
                     to={item.to}
-                    className="py-2 text-[13px] text-primary-foreground/55 hover:text-primary-foreground"
+                    className="py-2 text-[13px] text-foreground/55 hover:text-foreground"
                     onClick={() => setOpen(false)}
                   >
                     {item.label}
@@ -345,7 +345,7 @@ export default function Header() {
                   className={`flex items-center gap-1 rounded-sm border px-3 py-1.5 text-[11px] uppercase tracking-[0.15em] transition-colors ${
                     lang === l
                       ? "border-accent text-accent"
-                      : "border-primary-foreground/20 text-primary-foreground/60 hover:border-accent/40 hover:text-primary-foreground/80"
+                      : "border-border text-foreground/60 hover:border-accent/40 hover:text-foreground"
                   }`}
                 >
                   <img src={languageLabels[l].flag} alt={languageLabels[l].label} className="h-4 w-5 rounded-[2px] object-cover" />
