@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
-import { Loader2, MapPin, PencilLine, Plus, Star, Trash2, X, ImagePlus, ArrowLeft, ArrowRight, GripVertical } from "lucide-react";
+import { Loader2, MapPin, PencilLine, Plus, Minus, Star, Trash2, X, ImagePlus, ArrowLeft, ArrowRight, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPropertyPrice, propertyTypeLabel, purposeLabel, type Property, type PropertyType, type PropertyPurpose } from "@/data/properties";
 import { useProperties, useCreateProperty, useUpdateProperty, useDeleteProperty, uploadPropertyImage, type PropertyFormData } from "@/hooks/use-properties";
@@ -21,6 +21,61 @@ async function resolveMapUrl(url: string): Promise<{ osmEmbed: string | null; la
   });
   if (!res.ok) throw new Error("Falha ao resolver o link");
   return res.json();
+}
+
+// ─── Custom Number Input for Mobile/Premium UX ──────────
+
+function CounterInput({
+  label,
+  value,
+  onChange,
+  min = 0,
+  step = 1,
+  suffix = "",
+}: {
+  label: string;
+  value: number;
+  onChange: (val: number) => void;
+  min?: number;
+  step?: number;
+  suffix?: string;
+}) {
+  const labelClass = "block text-xs uppercase tracking-[0.18em] text-muted-foreground mb-1.5";
+  return (
+    <div>
+      <label className={labelClass}>{label}</label>
+      <div className="flex h-10 w-full items-center rounded-sm border border-border bg-background transition-colors focus-within:border-accent">
+        <button
+          type="button"
+          onClick={() => onChange(Math.max(min, value - step))}
+          className="flex h-full w-8 shrink-0 items-center justify-center border-r border-border text-foreground hover:bg-secondary/50 active:bg-secondary transition-colors"
+        >
+          <Minus size={14} />
+        </button>
+        <div className="flex flex-1 min-w-0 items-center justify-center px-1">
+          <input
+            type="number"
+            value={value ?? 0}
+            placeholder="0"
+            step={step}
+            onChange={(e) => {
+              const val = e.target.value === "" ? 0 : Number(e.target.value);
+              if (!isNaN(val)) onChange(val);
+            }}
+            className="w-full bg-transparent text-center text-sm font-semibold text-foreground outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+          {suffix && <span className="ml-1 text-[10px] text-muted-foreground whitespace-nowrap">{suffix}</span>}
+        </div>
+        <button
+          type="button"
+          onClick={() => onChange(value + step)}
+          className="flex h-full w-8 shrink-0 items-center justify-center border-l border-border text-foreground hover:bg-secondary/50 active:bg-secondary transition-colors"
+        >
+          <Plus size={14} />
+        </button>
+      </div>
+    </div>
+  );
 }
 
 // ─── Property Form Modal ───────────────────────────────
@@ -81,9 +136,60 @@ function PropertyFormModal({
   });
 
   const [uploading, setUploading] = useState(false);
+  const [searchingCep, setSearchingCep] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [resolvingMap, setResolvingMap] = useState(false);
   const [mapPreview, setMapPreview] = useState<string | null>(null);
+
+  const getFloripaZone = (neighborhood: string) => {
+    const n = neighborhood.toLowerCase();
+    // Norte
+    if (/jurer|canasvieiras|ingleses|cachoeira|ponta das canas|brava|daniela|ratones|vargem|santo ant/i.test(n)) return "Norte";
+    // Sul
+    if (/campeche|rio tavares|pântano|arma|morro das pedras|ribeir|tapera/i.test(n)) return "Sul";
+    // Leste
+    if (/lagoa da concei|barra da lagoa|rio vermelho/i.test(n)) return "Leste";
+    // Centro
+    if (/centro|agron|trindade|itacorubi|santa m|córrego grande|pantanal|carvoeira/i.test(n)) return "Centro";
+    // Continente
+    if (/coqueiros|estreito|abra|bom abrigo|itagua/i.test(n)) return "Continente";
+    return "";
+  };
+
+  const handleCepLookup = async (cep: string) => {
+    const cleaned = cep.replace(/\D/g, "");
+    if (cleaned.length !== 8) return;
+
+    setSearchingCep(true);
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${cleaned}/json/`);
+      const data = await res.json();
+      if (data.erro) {
+        toast({ title: "CEP não encontrado", variant: "destructive" });
+      } else {
+        const newLocation = `${data.localidade}/${data.uf}`;
+        const newNeighborhood = data.bairro || "";
+        const detectedZone = data.localidade.toLowerCase().includes("florian") ? getFloripaZone(newNeighborhood) : "";
+        
+        setForm((p) => ({
+          ...p,
+          neighborhood: newNeighborhood,
+          location: newLocation,
+          zone: detectedZone || p.zone,
+          region: data.localidade || p.region,
+          // Generate an initial Google Maps link based on the address found
+          mapEmbedUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+            `${data.logradouro || ""}, ${newNeighborhood}, ${newLocation}`.trim().replace(/^,/, "").trim()
+          )}`
+        }));
+        toast({ title: "Endereço preenchido!" });
+      }
+    } catch {
+      toast({ title: "Erro na busca do CEP", variant: "destructive" });
+    } finally {
+      setSearchingCep(false);
+    }
+  };
 
   // ── Drag-to-reorder state ──
   const dragSrcIdx = useRef<number | null>(null);
@@ -315,7 +421,27 @@ function PropertyFormModal({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div>
+              <label className={labelClass}>CEP</label>
+              <div className="relative">
+                <input
+                  className={inputClass}
+                  placeholder="00000-000"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val.replace(/\D/g, "").length === 8) {
+                      handleCepLookup(val);
+                    }
+                  }}
+                />
+                {searchingCep && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Loader2 size={14} className="animate-spin text-accent" />
+                  </div>
+                )}
+              </div>
+            </div>
             <div>
               <label className={labelClass}>Bairro</label>
               <input className={inputClass} value={form.neighborhood} onChange={(e) => setForm((p) => ({ ...p, neighborhood: e.target.value }))} required />
@@ -324,33 +450,29 @@ function PropertyFormModal({
               <label className={labelClass}>Cidade/UF</label>
               <input className={inputClass} value={form.location} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} required />
             </div>
-            <div>
-              <label className={labelClass}>Acomodações (pessoas)</label>
-              <input type="number" className={inputClass} value={form.accommodates} onChange={(e) => setForm((p) => ({ ...p, accommodates: Number(e.target.value) }))} min={0} />
-            </div>
+            <CounterInput label="Acomodações" value={form.accommodates} onChange={(val) => setForm(p => ({ ...p, accommodates: val }))} />
           </div>
 
           {/* Números */}
-          <div className="grid grid-cols-3 gap-4 sm:grid-cols-6">
-            <div><label className={labelClass}>Quartos</label><input type="number" className={inputClass} value={form.bedrooms} onChange={(e) => setForm((p) => ({ ...p, bedrooms: Number(e.target.value) }))} min={0} /></div>
-            <div><label className={labelClass}>Suítes</label><input type="number" className={inputClass} value={form.suites} onChange={(e) => setForm((p) => ({ ...p, suites: Number(e.target.value) }))} min={0} /></div>
-            <div><label className={labelClass}>Banheiros</label><input type="number" className={inputClass} value={form.bathrooms} onChange={(e) => setForm((p) => ({ ...p, bathrooms: Number(e.target.value) }))} min={0} /></div>
-            <div><label className={labelClass}>Área m²</label><input type="number" className={inputClass} value={form.area} onChange={(e) => setForm((p) => ({ ...p, area: Number(e.target.value) }))} min={0} /></div>
-            <div><label className={labelClass}>Vagas</label><input type="number" className={inputClass} value={form.parkingSpots} onChange={(e) => setForm((p) => ({ ...p, parkingSpots: Number(e.target.value) }))} min={0} /></div>
-            <div><label className={labelClass}>Salas</label><input type="number" className={inputClass} value={form.rooms} onChange={(e) => setForm((p) => ({ ...p, rooms: Number(e.target.value) }))} min={0} /></div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
+            <CounterInput label="Quartos" value={form.bedrooms} onChange={(val) => setForm(p => ({ ...p, bedrooms: val }))} />
+            <CounterInput label="Suítes" value={form.suites} onChange={(val) => setForm(p => ({ ...p, suites: val }))} />
+            <CounterInput label="Banheiros" value={form.bathrooms} onChange={(val) => setForm(p => ({ ...p, bathrooms: val }))} />
+            <CounterInput label="Área m²" value={form.area} onChange={(val) => setForm(p => ({ ...p, area: val }))} />
+            <CounterInput label="Vagas" value={form.parkingSpots} onChange={(val) => setForm(p => ({ ...p, parkingSpots: val }))} />
+            <CounterInput label="Salas" value={form.rooms} onChange={(val) => setForm(p => ({ ...p, rooms: val }))} />
           </div>
 
-          {/* Áreas detalhadas */}
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-2">Áreas detalhadas</p>
-            <div className="grid grid-cols-3 gap-3">
-              <div><label className={labelClass}>Área Total m²</label><input type="number" className={inputClass} value={form.totalArea} onChange={(e) => setForm((p) => ({ ...p, totalArea: Number(e.target.value) }))} min={0} /></div>
-              <div><label className={labelClass}>Área Construída m²</label><input type="number" className={inputClass} value={form.builtArea} onChange={(e) => setForm((p) => ({ ...p, builtArea: Number(e.target.value) }))} min={0} /></div>
-              <div><label className={labelClass}>Área Terreno m²</label><input type="number" className={inputClass} value={form.landArea} onChange={(e) => setForm((p) => ({ ...p, landArea: Number(e.target.value) }))} min={0} /></div>
-              <div><label className={labelClass}>Terreno Frente (m)</label><input type="number" className={inputClass} value={form.landFront} onChange={(e) => setForm((p) => ({ ...p, landFront: Number(e.target.value) }))} min={0} /></div>
-              <div><label className={labelClass}>Terreno Fundo (m)</label><input type="number" className={inputClass} value={form.landBack} onChange={(e) => setForm((p) => ({ ...p, landBack: Number(e.target.value) }))} min={0} /></div>
-              <div><label className={labelClass}>Terreno Esq. (m)</label><input type="number" className={inputClass} value={form.landLeft} onChange={(e) => setForm((p) => ({ ...p, landLeft: Number(e.target.value) }))} min={0} /></div>
-              <div><label className={labelClass}>Terreno Dir. (m)</label><input type="number" className={inputClass} value={form.landRight} onChange={(e) => setForm((p) => ({ ...p, landRight: Number(e.target.value) }))} min={0} /></div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <CounterInput label="Área Total m²" value={form.totalArea} onChange={(val) => setForm(p => ({ ...p, totalArea: val }))} />
+              <CounterInput label="Área Construída m²" value={form.builtArea} onChange={(val) => setForm(p => ({ ...p, builtArea: val }))} />
+              <CounterInput label="Área Terreno m²" value={form.landArea} onChange={(val) => setForm(p => ({ ...p, landArea: val }))} />
+              <CounterInput label="Terreno Frente (m)" value={form.landFront} onChange={(val) => setForm(p => ({ ...p, landFront: val }))} />
+              <CounterInput label="Terreno Fundo (m)" value={form.landBack} onChange={(val) => setForm(p => ({ ...p, landBack: val }))} />
+              <CounterInput label="Terreno Esq. (m)" value={form.landLeft} onChange={(val) => setForm(p => ({ ...p, landLeft: val }))} />
+              <CounterInput label="Terreno Dir. (m)" value={form.landRight} onChange={(val) => setForm(p => ({ ...p, landRight: val }))} />
             </div>
           </div>
 

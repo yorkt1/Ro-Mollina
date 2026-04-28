@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ImagePlus, Loader2, PencilLine, Play, Plus, Trash2, X } from "lucide-react";
+import { ImagePlus, Loader2, PencilLine, Play, Plus, Minus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -10,6 +10,57 @@ import {
   type YouTubeVideo,
 } from "@/hooks/use-youtube-videos";
 import { uploadImageToCloudinary } from "@/lib/cloudinary";
+
+// ─── Custom Number Input ───────────────────────────────
+
+function CounterInput({
+  label,
+  value,
+  onChange,
+  min = 0,
+  step = 1,
+}: {
+  label: string;
+  value: number;
+  onChange: (val: number) => void;
+  min?: number;
+  step?: number;
+}) {
+  const labelClass = "block text-xs uppercase tracking-[0.18em] text-muted-foreground mb-1.5";
+  return (
+    <div>
+      <label className={labelClass}>{label}</label>
+      <div className="flex h-10 w-full items-center rounded-sm border border-border bg-background transition-colors focus-within:border-accent">
+        <button
+          type="button"
+          onClick={() => onChange(Math.max(min, value - step))}
+          className="flex h-full w-8 shrink-0 items-center justify-center border-r border-border text-foreground hover:bg-secondary/50 active:bg-secondary transition-colors"
+        >
+          <Minus size={14} />
+        </button>
+        <div className="flex flex-1 min-w-0 items-center justify-center px-1">
+          <input
+            type="number"
+            value={value ?? 0}
+            placeholder="0"
+            onChange={(e) => {
+              const val = e.target.value === "" ? 0 : Number(e.target.value);
+              if (!isNaN(val)) onChange(val);
+            }}
+            className="w-full bg-transparent text-center text-sm font-semibold text-foreground outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={() => onChange(value + step)}
+          className="flex h-full w-8 shrink-0 items-center justify-center border-l border-border text-foreground hover:bg-secondary/50 active:bg-secondary transition-colors"
+        >
+          <Plus size={14} />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 // ─── Form Modal ────────────────────────────────────────
 
@@ -104,10 +155,12 @@ function VideoFormModal({
             </p>
           </div>
 
-          <div>
-            <label className={labelClass}>Ordem de exibição</label>
-            <input type="number" className={inputClass} value={form.sort_order} onChange={(e) => setForm((p) => ({ ...p, sort_order: Number(e.target.value) }))} min={1} />
-          </div>
+          <CounterInput
+            label="Ordem de exibição"
+            value={form.sort_order}
+            onChange={(val) => setForm((p) => ({ ...p, sort_order: val }))}
+            min={1}
+          />
 
           {/* Thumbnail */}
           <div>

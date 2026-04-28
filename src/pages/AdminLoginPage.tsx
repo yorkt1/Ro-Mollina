@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Loader2, LockKeyhole, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,18 +6,19 @@ import { useAuth } from "@/hooks/use-auth";
 import heroBg from "@/assets/hero-bg.jpg";
 
 export default function AdminLoginPage() {
-  const { signIn, user } = useAuth();
+  const { signIn, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // If already logged in, redirect
-  if (user) {
-    navigate("/admin/imoveis", { replace: true });
-    return null;
-  }
+  // Use effect for redirection to avoid "blank screen" return null issues
+  useEffect(() => {
+    if (user) {
+      navigate("/admin/imoveis", { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +31,8 @@ export default function AdminLoginPage() {
       setError(err);
       setLoading(false);
     } else {
+      // If success, user state will update and useEffect will navigate
+      // but we can also navigate here for faster response if state update is async
       navigate("/admin/imoveis", { replace: true });
     }
   };
