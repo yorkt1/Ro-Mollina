@@ -3,7 +3,9 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown, Home, Building2, Waves, TreePine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage, type Language } from "@/hooks/use-language";
-import { whatsappLink } from "@/data/properties";
+import { whatsappLink, propertyTypeLabel } from "@/data/properties";
+import { usePropertyTypes } from "@/hooks/use-property-types";
+import { useDestinationLinks } from "@/hooks/use-destination-links";
 
 /* ── Dropdown config ─────────────────────────── */
 const buyItems = [
@@ -107,6 +109,64 @@ export default function Header() {
   const location = useLocation();
   const { lang, setLang, t, languageLabels } = useLanguage();
   const langRef = useRef<HTMLDivElement>(null);
+  const { data: propertyTypes = [] } = usePropertyTypes();
+  const { data: destLinks = [] } = useDestinationLinks();
+
+  // Helper to map links to icons
+  const getLinkIcon = (name: string) => {
+    const n = name.toLowerCase();
+    if (n.includes("apartamento")) return Building2;
+    if (n.includes("casa")) return Home;
+    if (n.includes("cobertura")) return Waves;
+    if (n.includes("terreno")) return TreePine;
+    return Building2; // Default
+  };
+
+  // Derive menu items directly from Property Types
+  const autoBuyItems = [
+    { label: "Ver todos", to: "/comprar", icon: Home },
+    ...propertyTypes.map(t => ({
+      label: propertyTypeLabel(t.name),
+      to: `/comprar/${t.name}`,
+      icon: getLinkIcon(t.name)
+    }))
+  ];
+
+  const autoRentItems = [
+    { label: "Ver todos", to: "/alugar", icon: Building2 },
+    ...propertyTypes.map(t => ({
+      label: propertyTypeLabel(t.name),
+      to: `/alugar/${t.name}`,
+      icon: getLinkIcon(t.name)
+    }))
+  ];
+
+  // Add custom links from database to dropdowns or main menu
+  const customBuyItems = destLinks
+    .filter(d => 
+      d.path.startsWith("/comprar") && 
+      !d.name.toLowerCase().includes("condominio") &&
+      !d.name.toLowerCase().includes("condomínio")
+    )
+    .map(d => ({ label: d.name, to: d.path, icon: getLinkIcon(d.name) }));
+
+  const customRentItems = destLinks
+    .filter(d => 
+      d.path.startsWith("/alugar") && 
+      !d.name.toLowerCase().includes("condominio") &&
+      !d.name.toLowerCase().includes("condomínio")
+    )
+    .map(d => ({ label: d.name, to: d.path, icon: getLinkIcon(d.name) }));
+
+  const otherCustomLinks = destLinks.filter(d => 
+    !d.path.startsWith("/comprar") && 
+    !d.path.startsWith("/alugar") &&
+    !d.name.toLowerCase().includes("condominio") &&
+    !d.name.toLowerCase().includes("condomínio")
+  );
+
+  const finalBuyItems = [...autoBuyItems, ...customBuyItems];
+  const finalRentItems = [...autoRentItems, ...customRentItems];
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 36);
@@ -156,7 +216,7 @@ export default function Header() {
                   isActive("/") ? "active text-foreground" : ""
                 }`}
               >
-                {t.home}
+                Início
               </a>
             </li>
 
@@ -165,7 +225,7 @@ export default function Header() {
               <NavDropdown
                 label={t.buy}
                 to="/comprar"
-                items={buyItems}
+                items={finalBuyItems}
                 isActive={isActive("/comprar")}
               />
             </li>
@@ -175,7 +235,7 @@ export default function Header() {
               <NavDropdown
                 label={t.rent}
                 to="/alugar"
-                items={rentItems}
+                items={finalRentItems}
                 isActive={isActive("/alugar")}
               />
             </li>
@@ -186,7 +246,7 @@ export default function Header() {
                 href="/#sobre"
                 className="nav-link text-[13px] uppercase tracking-[0.2em]"
               >
-                {t.about}
+                Sobre
               </a>
             </li>
 
@@ -196,9 +256,27 @@ export default function Header() {
                 href="/#contato"
                 className="nav-link text-[13px] uppercase tracking-[0.2em]"
               >
-                {t.contact}
+                Contato
               </a>
             </li>
+
+
+
+            {/* Custom Links from Settings */}
+            {otherCustomLinks.map((link) => (
+              <li key={link.id}>
+                <Link
+                  to={link.path}
+                  className={`nav-link text-[13px] uppercase tracking-[0.2em] ${
+                    isActive(link.path) ? "active text-foreground" : ""
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              </li>
+            ))}
+
+
           </ul>
 
           <div className="h-5 w-px bg-foreground/15" />
@@ -272,19 +350,13 @@ export default function Header() {
       {open && (
         <div className="border-t border-border bg-white/98 px-6 py-6 backdrop-blur-md lg:hidden">
           <div className="flex flex-col gap-1">
-            {[
-              { label: t.home,    to: "/"          },
-              { label: t.about,   to: "/#sobre"    },
-              { label: t.contact, to: "/#contato"  },
-            ].map((link) => (
-              <a
-                key={link.to}
-                href={link.to}
-                className="py-2.5 text-sm uppercase tracking-[0.2em] text-foreground/70 transition-colors hover:text-foreground"
-              >
-                {link.label}
-              </a>
-            ))}
+            <Link
+              to="/"
+              className="py-2.5 text-sm uppercase tracking-[0.2em] text-foreground/70 transition-colors hover:text-foreground"
+              onClick={() => setOpen(false)}
+            >
+              Início
+            </Link>
 
             {/* Comprar expandable */}
             <details className="group">
@@ -293,7 +365,7 @@ export default function Header() {
                 <ChevronDown size={14} className="transition-transform group-open:rotate-180" />
               </summary>
               <div className="mt-1 flex flex-col gap-0.5 pl-4">
-                {buyItems.map((item) => (
+                {finalBuyItems.map((item) => (
                   <Link
                     key={item.to}
                     to={item.to}
@@ -313,7 +385,7 @@ export default function Header() {
                 <ChevronDown size={14} className="transition-transform group-open:rotate-180" />
               </summary>
               <div className="mt-1 flex flex-col gap-0.5 pl-4">
-                {rentItems.map((item) => (
+                {finalRentItems.map((item) => (
                   <Link
                     key={item.to}
                     to={item.to}
@@ -325,6 +397,36 @@ export default function Header() {
                 ))}
               </div>
             </details>
+
+            {/* Custom Mobile Links */}
+            {otherCustomLinks.map((link) => (
+              <Link
+                key={link.id}
+                to={link.path}
+                className="py-2.5 text-sm uppercase tracking-[0.2em] text-foreground/70 transition-colors hover:text-foreground"
+                onClick={() => setOpen(false)}
+              >
+                {link.name}
+              </Link>
+            ))}
+
+            <a
+              href="/#sobre"
+              className="py-2.5 text-sm uppercase tracking-[0.2em] text-foreground/70 transition-colors hover:text-foreground"
+              onClick={() => setOpen(false)}
+            >
+              Sobre
+            </a>
+
+            <a
+              href="/#contato"
+              className="py-2.5 text-sm uppercase tracking-[0.2em] text-foreground/70 transition-colors hover:text-foreground"
+              onClick={() => setOpen(false)}
+            >
+              Contato
+            </a>
+
+
 
             <a
               href={whatsappLink("Olá! Gostaria de negociar meu imóvel com a Ro Molina.")}

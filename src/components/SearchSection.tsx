@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Search, SlidersHorizontal, Hash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { properties, propertyTypeLabel, publicLocations, type PropertyPurpose, type PropertyType } from "@/data/properties";
+import { usePropertyTypes } from "@/hooks/use-property-types";
 
 export default function SearchSection() {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ export default function SearchSection() {
   const [location, setLocation] = useState("");
   const [mode, setMode] = useState<"filters" | "reference">("filters");
   const [refCode, setRefCode] = useState("");
+  const { data: propertyTypes = [] } = usePropertyTypes();
 
   const handleSearch = () => {
     const params = new URLSearchParams();
@@ -106,8 +108,8 @@ export default function SearchSection() {
                   <label className={labelClass}>Tipo do Imóvel</label>
                   <select value={type} onChange={(e) => setType(e.target.value)} className={selectClass}>
                     <option value="">Selecione</option>
-                    {(["apartamento", "casa", "cobertura", "terreno"] as PropertyType[]).map((t) => (
-                      <option key={t} value={t}>{propertyTypeLabel(t)}</option>
+                    {propertyTypes.map((t) => (
+                      <option key={t.id} value={t.name}>{propertyTypeLabel(t.name)}</option>
                     ))}
                   </select>
                 </div>

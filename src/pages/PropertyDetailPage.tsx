@@ -692,7 +692,7 @@ export default function PropertyDetailPage() {
             {/* CTA */}
             <div className="rounded-sm border border-border bg-[hsl(var(--navy-deep))] p-7 text-white">
               <p className="text-xs uppercase tracking-[0.28em] text-accent">Atendimento</p>
-              <h2 className="mt-3 text-2xl leading-tight text-white">Fale com a Ro sobre este imóvel.</h2>
+              <h2 className="mt-3 text-2xl leading-tight text-white">Fale com a Ro Molina</h2>
               <p className="mt-3 text-sm text-white/66">
                 Mensagem pré-preenchida para agilizar o atendimento.
               </p>

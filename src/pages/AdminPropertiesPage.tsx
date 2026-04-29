@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { formatPropertyPrice, propertyTypeLabel, purposeLabel, type Property, type PropertyType, type PropertyPurpose } from "@/data/properties";
 import { useProperties, useCreateProperty, useUpdateProperty, useDeleteProperty, uploadPropertyImage, type PropertyFormData } from "@/hooks/use-properties";
 import { useToast } from "@/hooks/use-toast";
+import { usePropertyTypes } from "@/hooks/use-property-types";
 
 const SUPABASE_URL = "https://kujwgpumdggggbnxuhem.supabase.co";
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
@@ -21,6 +22,23 @@ async function resolveMapUrl(url: string): Promise<{ osmEmbed: string | null; la
   });
   if (!res.ok) throw new Error("Falha ao resolver o link");
   return res.json();
+}
+
+/** Tries to parse lat/lng directly from a long Google Maps URL on the client side */
+function parseCoordsLocally(url: string) {
+  // Pattern 1: @lat,lng
+  const atMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (atMatch) return { lat: parseFloat(atMatch[1]), lng: parseFloat(atMatch[2]) };
+
+  // Pattern 2: !3dlat!4dlng (used in long URLs)
+  const bangMatch = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+  if (bangMatch) return { lat: parseFloat(bangMatch[1]), lng: parseFloat(bangMatch[2]) };
+
+  // Pattern 3: query params q=lat,lng
+  const qMatch = url.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (qMatch) return { lat: parseFloat(qMatch[1]), lng: parseFloat(qMatch[2]) };
+
+  return null;
 }
 
 // ─── Custom Number Input for Mobile/Premium UX ──────────
@@ -90,6 +108,7 @@ function PropertyFormModal({
   const { toast } = useToast();
   const createMutation = useCreateProperty();
   const updateMutation = useUpdateProperty();
+  const { data: propertyTypes = [] } = usePropertyTypes();
   const isEditing = !!property;
 
   const [form, setForm] = useState({
@@ -99,7 +118,7 @@ function PropertyFormModal({
     price: property?.price ?? 0,
     location: property?.location ?? "Florianópolis/SC",
     neighborhood: property?.neighborhood ?? "",
-    type: (property?.type ?? "apartamento") as PropertyType,
+    type: (property?.type ?? (propertyTypes[0]?.name || "apartamento")) as PropertyType,
     purpose: (property?.purpose ?? "venda") as PropertyPurpose,
     bedrooms: property?.bedrooms ?? 1,
     suites: property?.suites ?? 0,
@@ -133,13 +152,20 @@ function PropertyFormModal({
     nearby: property?.nearby ?? [],
     leisure: property?.leisure ?? [],
     roomsList: property?.roomsList ?? [],
+    cep: "", // Temporary field for lookup
+    addressNumber: "", // Temporary field for maps
+    street: "", // Temporary field to hold the street name for accurate map searches
   });
+
+  // Local state for comma-separated inputs to avoid "jumping" cursor bug
+  const [nearbyText, setNearbyText] = useState(property?.nearby?.join(", ") ?? "");
+  const [leisureText, setLeisureText] = useState(property?.leisure?.join(", ") ?? "");
 
   const [uploading, setUploading] = useState(false);
   const [searchingCep, setSearchingCep] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [resolvingMap, setResolvingMap] = useState(false);
-  const [mapPreview, setMapPreview] = useState<string | null>(null);
+  const [mapPreview, setMapPreview] = useState<string | null>(property?.mapEmbedUrl || null);
 
   const getFloripaZone = (neighborhood: string) => {
     const n = neighborhood.toLowerCase();
@@ -171,17 +197,23 @@ function PropertyFormModal({
         const newNeighborhood = data.bairro || "";
         const detectedZone = data.localidade.toLowerCase().includes("florian") ? getFloripaZone(newNeighborhood) : "";
         
+        const streetName = data.logradouro || "";
         setForm((p) => ({
           ...p,
           neighborhood: newNeighborhood,
           location: newLocation,
           zone: detectedZone || p.zone,
           region: data.localidade || p.region,
-          // Generate an initial Google Maps link based on the address found
-          mapEmbedUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-            `${data.logradouro || ""}, ${newNeighborhood}, ${newLocation}`.trim().replace(/^,/, "").trim()
-          )}`
+          cep: cleaned,
+          street: streetName,
+          // Generate an embeddable Google Maps link automatically
+          mapEmbedUrl: `https://maps.google.com/maps?q=${encodeURIComponent(
+            `${streetName}${p.addressNumber ? ", " + p.addressNumber : ""}, ${newNeighborhood}, ${newLocation}`.trim().replace(/^,/, "").trim()
+          )}&output=embed&hl=pt-BR`
         }));
+        setMapPreview(`https://maps.google.com/maps?q=${encodeURIComponent(
+          `${streetName}${form.addressNumber ? ", " + form.addressNumber : ""}, ${newNeighborhood}, ${newLocation}`.trim().replace(/^,/, "").trim()
+        )}&output=embed&hl=pt-BR`);
         toast({ title: "Endereço preenchido!" });
       }
     } catch {
@@ -307,6 +339,16 @@ function PropertyFormModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!form.cep || form.cep.length < 8) {
+      toast({ title: "CEP Obrigatório", description: "Por favor, informe um CEP válido para localizar o imóvel.", variant: "destructive" });
+      return;
+    }
+
+    if (!form.addressNumber) {
+      toast({ title: "Número Obrigatório", description: "Informe o número do imóvel para gerar o link do Google Maps.", variant: "destructive" });
+      return;
+    }
+
     const payload: PropertyFormData = {
       ...form,
       tag: form.tag || undefined,
@@ -351,6 +393,8 @@ function PropertyFormModal({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+
+
           {/* ── Informações básicas ── */}
           <div>
             <label className={labelClass}>Título</label>
@@ -365,6 +409,63 @@ function PropertyFormModal({
           <div>
             <label className={labelClass}>Descrição completa (página do imóvel)</label>
             <textarea rows={8} className="w-full rounded-sm border border-border bg-background px-3 py-2 text-sm outline-none transition-colors focus:border-accent resize-y" value={form.fullDescription} onChange={(e) => setForm((p) => ({ ...p, fullDescription: e.target.value }))} placeholder="Descrição detalhada, condições de negócio, diferenciais..." />
+          </div>
+
+          {/* ── Localização (Reposicionado abaixo da descrição) ── */}
+          <div className="space-y-4 rounded-sm border border-accent/20 bg-accent/5 p-4">
+            <p className="text-xs uppercase tracking-[0.18em] text-accent font-semibold">Localização do Imóvel</p>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <div>
+                <label className={labelClass}>CEP</label>
+                <div className="relative">
+                  <input
+                    className={inputClass}
+                    value={form.cep}
+                    placeholder="00000-000"
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "");
+                      setForm(p => ({ ...p, cep: val }));
+                      if (val.length === 8) {
+                        handleCepLookup(val);
+                      }
+                    }}
+                    required
+                  />
+                  {searchingCep && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Loader2 size={14} className="animate-spin text-accent" />
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label className={labelClass}>Número</label>
+                <input 
+                  className={inputClass} 
+                  value={form.addressNumber} 
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setForm(p => {
+                      const newUrl = `https://maps.google.com/maps?q=${encodeURIComponent(
+                        `${p.street ? p.street + ", " : ""}${val}, ${p.neighborhood}, ${p.location}`.trim().replace(/^,/, "").trim()
+                      )}&output=embed&hl=pt-BR`;
+                      setMapPreview(newUrl);
+                      return { ...p, addressNumber: val, mapEmbedUrl: newUrl };
+                    });
+                  }} 
+                  placeholder="Ex: 150"
+                  required 
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Bairro</label>
+                <input className={inputClass} value={form.neighborhood} onChange={(e) => setForm((p) => ({ ...p, neighborhood: e.target.value }))} required />
+              </div>
+              <div>
+                <label className={labelClass}>Cidade/UF</label>
+                <input className={inputClass} value={form.location} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} required />
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
@@ -394,10 +495,9 @@ function PropertyFormModal({
             <div>
               <label className={labelClass}>Tipo</label>
               <select className={inputClass} value={form.type} onChange={(e) => setForm((p) => ({ ...p, type: e.target.value as PropertyType }))}>
-                <option value="apartamento">Apartamento</option>
-                <option value="casa">Casa</option>
-                <option value="cobertura">Cobertura</option>
-                <option value="terreno">Terreno</option>
+                {propertyTypes.map((t) => (
+                  <option key={t.id} value={t.name}>{propertyTypeLabel(t.name)}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -421,37 +521,7 @@ function PropertyFormModal({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div>
-              <label className={labelClass}>CEP</label>
-              <div className="relative">
-                <input
-                  className={inputClass}
-                  placeholder="00000-000"
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val.replace(/\D/g, "").length === 8) {
-                      handleCepLookup(val);
-                    }
-                  }}
-                />
-                {searchingCep && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <Loader2 size={14} className="animate-spin text-accent" />
-                  </div>
-                )}
-              </div>
-            </div>
-            <div>
-              <label className={labelClass}>Bairro</label>
-              <input className={inputClass} value={form.neighborhood} onChange={(e) => setForm((p) => ({ ...p, neighborhood: e.target.value }))} required />
-            </div>
-            <div>
-              <label className={labelClass}>Cidade/UF</label>
-              <input className={inputClass} value={form.location} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} required />
-            </div>
-            <CounterInput label="Acomodações" value={form.accommodates} onChange={(val) => setForm(p => ({ ...p, accommodates: val }))} />
-          </div>
+
 
           {/* Números */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
@@ -461,6 +531,7 @@ function PropertyFormModal({
             <CounterInput label="Área m²" value={form.area} onChange={(val) => setForm(p => ({ ...p, area: val }))} />
             <CounterInput label="Vagas" value={form.parkingSpots} onChange={(val) => setForm(p => ({ ...p, parkingSpots: val }))} />
             <CounterInput label="Salas" value={form.rooms} onChange={(val) => setForm(p => ({ ...p, rooms: val }))} />
+            <CounterInput label="Acomodações" value={form.accommodates} onChange={(val) => setForm(p => ({ ...p, accommodates: val }))} />
           </div>
 
           <div>
@@ -518,37 +589,6 @@ function PropertyFormModal({
                     }}
                     placeholder="Cole aqui qualquer link do Google Maps"
                   />
-                  <button
-                    type="button"
-                    disabled={!form.mapEmbedUrl || resolvingMap}
-                    onClick={async () => {
-                      if (!form.mapEmbedUrl) return;
-                      setResolvingMap(true);
-                      try {
-                        const result = await resolveMapUrl(form.mapEmbedUrl);
-                        if (result.lat !== null && result.lng !== null) {
-                          const googleEmbed = `https://maps.google.com/maps?q=${result.lat},${result.lng}&output=embed&hl=pt-BR`;
-                          setForm((p) => ({ ...p, mapEmbedUrl: googleEmbed }));
-                          setMapPreview(googleEmbed);
-                          toast({ title: "Mapa resolvido!", description: `Coordenadas extraídas com sucesso.` });
-                        } else if (result.osmEmbed) {
-                          setForm((p) => ({ ...p, mapEmbedUrl: result.osmEmbed! }));
-                          setMapPreview(result.osmEmbed);
-                          toast({ title: "Mapa resolvido (OSM)!", description: `Coordenadas: ${result.lat?.toFixed(5)}, ${result.lng?.toFixed(5)}` });
-                        } else {
-                          toast({ title: "Não foi possível extrair coordenadas", description: "Tente copiar a URL longa da barra de endereço do Google Maps.", variant: "destructive" });
-                        }
-                      } catch {
-                        toast({ title: "Erro ao resolver link", variant: "destructive" });
-                      } finally {
-                        setResolvingMap(false);
-                      }
-                    }}
-                    className="flex shrink-0 items-center gap-1.5 rounded-sm border border-border bg-secondary/50 px-3 text-xs font-medium text-foreground transition-colors hover:border-accent hover:text-accent disabled:opacity-40"
-                  >
-                    {resolvingMap ? <Loader2 size={13} className="animate-spin" /> : <MapPin size={13} />}
-                    {resolvingMap ? "..." : "Resolver"}
-                  </button>
                 </div>
                 {mapPreview && (
                   <div className="mt-2 aspect-video w-full overflow-hidden rounded-sm border border-border">
@@ -556,7 +596,7 @@ function PropertyFormModal({
                   </div>
                 )}
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Cole qualquer link do Maps e clique em <strong>Resolver</strong> (ou apenas salve o imóvel e a página cuidará de carregá-lo).
+                  O link do mapa é gerado automaticamente ao preencher o CEP e Número.
                 </p>
               </div>
             </div>
@@ -564,16 +604,22 @@ function PropertyFormModal({
 
           {/* Proximidades, Lazer, Cômodos */}
           {([
-            { key: "nearby" as const, label: "Proximidades", placeholder: "Bares e Restaurantes, Escola, Farmácia, Supermercado" },
-            { key: "leisure" as const, label: "Lazer", placeholder: "Churrasqueira, Piscina, Salão de Festas" },
-            { key: "roomsList" as const, label: "Cômodos", placeholder: "Cozinha, Sala de estar, Despensa" },
-          ]).map(({ key, label, placeholder }) => (
+            { key: "nearby" as const, label: "Proximidades", placeholder: "Bares, Escolas...", text: nearbyText, setText: setNearbyText },
+            { key: "leisure" as const, label: "Lazer", placeholder: "Piscina, Churrasqueira...", text: leisureText, setText: setLeisureText },
+          ]).map(({ key, label, placeholder, text, setText }) => (
             <div key={key}>
               <label className={labelClass}>{label} <span className="normal-case">(separados por vírgula)</span></label>
               <input
                 className={inputClass}
-                value={form[key].join(", ")}
-                onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) }))}
+                value={text}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setText(val);
+                  setForm((p) => ({ 
+                    ...p, 
+                    [key]: val.split(",").map((s) => s.trim()).filter(Boolean) 
+                  }));
+                }}
                 placeholder={placeholder}
               />
             </div>

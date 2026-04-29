@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useMemo, useState, useEffect } from "react";
+import { useSearchParams, useParams } from "react-router-dom";
 import { Loader2, Search, X } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -11,6 +11,7 @@ import {
   propertyTypeLabel,
 } from "@/data/properties";
 import { useProperties } from "@/hooks/use-properties";
+import { usePropertyTypes } from "@/hooks/use-property-types";
 
 export default function PropertiesPage({
   defaultPurpose = "todos",
@@ -22,9 +23,11 @@ export default function PropertiesPage({
   pageSubtitle?: string;
 }) {
   const { data: properties = [], isLoading } = useProperties();
+  const { data: propertyTypes = [] } = usePropertyTypes();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { type: urlType } = useParams();
 
-  const initialType = searchParams.get("tipo") || "todos";
+  const initialType = urlType || searchParams.get("tipo") || "todos";
   const initialLocation = searchParams.get("bairro") || "todos";
   const initialMinPrice = searchParams.get("min") || "";
   const initialMaxPrice = searchParams.get("max") || "";
@@ -37,6 +40,16 @@ export default function PropertiesPage({
   const [minPrice, setMinPrice] = useState(initialMinPrice);
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice);
   const [bedrooms, setBedrooms] = useState(initialBedrooms);
+
+  // Sync state with URL when searchParams or defaultPurpose changes
+  useEffect(() => {
+    setPurpose(defaultPurpose);
+    setType(urlType || searchParams.get("tipo") || "todos");
+    setLocation(searchParams.get("bairro") || "todos");
+    setMinPrice(searchParams.get("min") || "");
+    setMaxPrice(searchParams.get("max") || "");
+    setBedrooms(searchParams.get("quartos") || "todos");
+  }, [searchParams, defaultPurpose, urlType]);
 
   // Derive locations from Supabase data
   const publicLocations = useMemo(
@@ -114,6 +127,15 @@ export default function PropertiesPage({
     });
   }, [location, purpose, search, type, minPrice, maxPrice, bedrooms, properties]);
 
+  // Dynamic title based on active type filter
+  const purposeWord = defaultPurpose === "venda" ? "à Venda" : defaultPurpose === "aluguel" ? "para Alugar" : "";
+  const dynamicTitle = type !== "todos"
+    ? `${propertyTypeLabel(type)} ${purposeWord}`.trim()
+    : pageTitle;
+  const dynamicSubtitle = type !== "todos"
+    ? `Veja todos os imóveis do tipo ${propertyTypeLabel(type).toLowerCase()} disponíveis.`
+    : pageSubtitle;
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -121,8 +143,8 @@ export default function PropertiesPage({
       <section className="bg-muted pt-28 pb-16 border-b border-border">
         <div className="container space-y-4 px-6 text-center">
           <p className="text-xs uppercase tracking-[0.28em] font-semibold text-accent">Portfólio</p>
-          <h1 className="text-3xl text-foreground sm:text-4xl md:text-5xl">{pageTitle}</h1>
-          <p className="mx-auto max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">{pageSubtitle}</p>
+          <h1 className="text-3xl text-foreground sm:text-4xl md:text-5xl">{dynamicTitle}</h1>
+          <p className="mx-auto max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">{dynamicSubtitle}</p>
         </div>
       </section>
 
@@ -169,8 +191,8 @@ export default function PropertiesPage({
               className="h-10 rounded-sm border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors focus:border-accent sm:h-11 sm:px-4"
             >
               <option value="todos">Todos os tipos</option>
-              {(["apartamento", "casa", "cobertura", "terreno"] as PropertyType[]).map((t) => (
-                <option key={t} value={t}>{propertyTypeLabel(t)}</option>
+              {propertyTypes.map((t) => (
+                <option key={t.id} value={t.name}>{propertyTypeLabel(t.name)}</option>
               ))}
             </select>
 

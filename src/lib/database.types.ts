@@ -7,7 +7,7 @@ export interface DbProperty {
   price: number;
   location: string;
   neighborhood: string;
-  type: "apartamento" | "casa" | "cobertura" | "terreno";
+  type: string;
   purpose: "venda" | "aluguel";
   bedrooms: number;
   suites: number;

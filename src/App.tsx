@@ -17,6 +17,7 @@ import AdminPropertiesPage from "./pages/AdminPropertiesPage";
 import AdminLeadsPage from "./pages/AdminLeadsPage";
 import AdminHighlightsPage from "./pages/AdminHighlightsPage";
 import AdminYouTubePage from "./pages/AdminYouTubePage";
+import AdminSettingsPage from "./pages/AdminSettingsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,8 +34,9 @@ const App = () => (
             <Route path="/" element={<HomePage />} />
             <Route path="/imoveis" element={<PropertiesPage />} />
             <Route path="/comprar" element={<BuyPage />} />
+            <Route path="/comprar/:type" element={<BuyPage />} />
             <Route path="/alugar" element={<RentPage />} />
-            <Route path="/imoveis/:id" element={<PropertyDetailPage />} />
+            <Route path="/alugar/:type" element={<RentPage />} />
             <Route path="/admin/login" element={<AdminLoginPage />} />
             <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
               <Route index element={<Navigate to="/admin/imoveis" replace />} />
@@ -42,7 +44,10 @@ const App = () => (
               <Route path="leads" element={<AdminLeadsPage />} />
               <Route path="destaques" element={<AdminHighlightsPage />} />
               <Route path="youtube" element={<AdminYouTubePage />} />
+              <Route path="configuracoes" element={<AdminSettingsPage />} />
             </Route>
+            {/* Clean property detail route — no conflict */}
+            <Route path="/imovel/:id" element={<PropertyDetailPage />} />
             <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

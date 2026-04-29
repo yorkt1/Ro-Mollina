@@ -6,7 +6,7 @@ import { cloudinaryUrl } from "@/lib/cloudinary";
 export default function PropertyCard({ property }: { property: Property }) {
   return (
     <Link
-      to={`/imoveis/${property.id}`}
+      to={`/imovel/${property.id}`}
       className="group block overflow-hidden rounded-sm bg-card card-hover"
     >
       <div className="relative aspect-[4/3] overflow-hidden">

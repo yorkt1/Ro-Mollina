@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
-import { Building2, TrendingUp, Sparkles, Youtube, Menu, X, LogOut } from "lucide-react";
+import { Building2, TrendingUp, Sparkles, Youtube, Menu, X, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -9,6 +9,7 @@ const items = [
   { to: "/admin/destaques",  label: "Destaques",       icon: Sparkles   },
   { to: "/admin/youtube",    label: "YouTube",          icon: Youtube    },
   { to: "/admin/leads",      label: "Leads & Pipeline", icon: TrendingUp },
+  { to: "/admin/configuracoes", label: "Configurações",    icon: Settings   },
 ];
 
 export default function AdminLayout() {
@@ -20,6 +21,9 @@ export default function AdminLayout() {
     await signOut();
     navigate("/admin/login", { replace: true });
   };
+
+  const mainItems = items.filter(item => item.to !== "/admin/configuracoes");
+  const settingsItem = items.find(item => item.to === "/admin/configuracoes");
 
   return (
     <div className="min-h-screen bg-background">
@@ -69,13 +73,19 @@ export default function AdminLayout() {
             <Link to="/admin/imoveis" className="font-serif text-3xl leading-none text-white">
               Ro CRM
             </Link>
-            {user && (
-              <p className="text-xs text-white/50 truncate">{user.email}</p>
-            )}
+            <div className="mt-4 flex items-center gap-3 rounded-sm bg-white/5 p-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-primary">
+                RM
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-white">Ro Molina</p>
+                <p className="truncate text-[10px] text-white/50">{user?.email || "ro@romolinaimoveis.com.br"}</p>
+              </div>
+            </div>
           </div>
 
-          <nav className="mt-10 space-y-1">
-            {items.map((item) => (
+          <nav className="mt-8 space-y-1">
+            {mainItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
@@ -94,7 +104,23 @@ export default function AdminLayout() {
           </nav>
 
           <div className="mt-auto space-y-3">
-            <div className="rounded-sm border border-white/10 bg-white/5 p-4">
+            {settingsItem && (
+              <NavLink
+                to={settingsItem.to}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-sm px-4 py-3 text-sm transition-colors ${
+                    isActive
+                      ? "bg-white/10 text-white"
+                      : "text-white/65 hover:bg-white/6 hover:text-white"
+                  }`
+                }
+              >
+                <settingsItem.icon size={16} />
+                {settingsItem.label}
+              </NavLink>
+            )}
+
+            <div className="border-t border-white/10 pt-4">
               <Button asChild variant="luxury" size="sm" className="w-full">
                 <Link to="/">← Voltar ao site</Link>
               </Button>

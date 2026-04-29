@@ -111,11 +111,11 @@
   }
 
   .card-hover {
-    @apply transition-colors duration-300;
+    @apply transition-all duration-300;
   }
-
+  
   .card-hover:hover {
-    @apply bg-accent/5;
+    @apply bg-white shadow-xl shadow-accent/15 -translate-y-1;
   }
 
   .nav-link {

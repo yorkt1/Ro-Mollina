@@ -10,6 +10,9 @@ import {
   type LifestyleHighlight,
 } from "@/hooks/use-highlights";
 import { uploadImageToCloudinary } from "@/lib/cloudinary";
+import { usePropertyTypes } from "@/hooks/use-property-types";
+import { useDestinationLinks } from "@/hooks/use-destination-links";
+import { propertyTypeLabel } from "@/data/properties";
 
 // ─── Custom Number Input ───────────────────────────────
 
@@ -78,11 +81,36 @@ function HighlightFormModal({
   const updateMutation = useUpdateHighlight();
   const isEditing = !!highlight;
 
+  const { data: propertyTypes = [] } = usePropertyTypes();
+  const { data: destLinks = [] } = useDestinationLinks();
+
+  // Mode: 'auto' (purpose+type) or 'custom' (manual path)
+  const [mode, setMode] = useState<"auto" | "custom">(() => {
+    const link = highlight?.link ?? "";
+    if (link && !link.includes("tipo=")) return "custom";
+    return "auto";
+  });
+
+  // Helper to parse existing link into purpose and type
+  const getInitialValues = () => {
+    const link = highlight?.link ?? "/comprar";
+    const isRent = link.startsWith("/alugar");
+    const typeMatch = link.match(/tipo=([^&]+)/);
+    return {
+      purpose: isRent ? "aluguel" : "venda",
+      type: typeMatch ? typeMatch[1] : ""
+    };
+  };
+
+  const initialValues = getInitialValues();
+
   const [form, setForm] = useState({
     title: highlight?.title ?? "",
     description: highlight?.description ?? "",
     image: highlight?.image ?? "",
-    link: highlight?.link ?? "/comprar",
+    purpose: initialValues.purpose,
+    propertyType: initialValues.type,
+    customLink: highlight?.link ?? "",
     sort_order: highlight?.sort_order ?? currentCount + 1,
   });
 
@@ -107,11 +135,28 @@ function HighlightFormModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Build the final link based on mode
+      let finalLink = "";
+      if (mode === "auto") {
+        const route = form.purpose === "venda" ? "/comprar" : "/alugar";
+        finalLink = form.propertyType ? `${route}?tipo=${form.propertyType}` : route;
+      } else {
+        finalLink = form.customLink;
+      }
+
+      const payload = {
+        title: form.title,
+        description: form.description,
+        image: form.image,
+        link: finalLink,
+        sort_order: form.sort_order
+      };
+
       if (isEditing && highlight) {
-        await updateMutation.mutateAsync({ id: highlight.id, ...form });
+        await updateMutation.mutateAsync({ id: highlight.id, ...payload });
         toast({ title: "Destaque atualizado!" });
       } else {
-        await createMutation.mutateAsync(form);
+        await createMutation.mutateAsync(payload);
         toast({ title: "Destaque criado!" });
       }
       onClose();
@@ -160,9 +205,90 @@ function HighlightFormModal({
             />
           </div>
 
-          <div>
-            <label className={labelClass}>Link destino</label>
-            <input className={inputClass} value={form.link} onChange={(e) => setForm((p) => ({ ...p, link: e.target.value }))} placeholder="/comprar" />
+          <div className="space-y-4 rounded-sm border border-border bg-secondary/5 p-4">
+            <div className="flex items-center gap-4 border-b border-border/50 pb-3">
+              <button
+                type="button"
+                onClick={() => setMode("auto")}
+                className={`text-[11px] uppercase tracking-wider transition-colors ${mode === "auto" ? "text-accent font-bold" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                TIPO
+              </button>
+              <div className="h-3 w-px bg-border" />
+              <button
+                type="button"
+                onClick={() => setMode("custom")}
+                className={`text-[11px] uppercase tracking-wider transition-colors ${mode === "custom" ? "text-accent font-bold" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                LINK
+              </button>
+            </div>
+
+            {mode === "auto" ? (
+              <div className="grid grid-cols-2 gap-4 pt-1">
+                <div>
+                  <label className={labelClass}>Finalidade</label>
+                  <select
+                    className={inputClass}
+                    value={form.purpose}
+                    onChange={(e) => setForm((p) => ({ ...p, purpose: e.target.value }))}
+                  >
+                    <option value="venda">Venda</option>
+                    <option value="aluguel">Aluguel</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={labelClass}>Tipo de Imóvel</label>
+                  <select
+                    className={inputClass}
+                    value={form.propertyType}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setForm((p) => ({ 
+                        ...p, 
+                        propertyType: val,
+                        title: (!p.title || propertyTypes.some(t => propertyTypeLabel(t.name) === p.title)) 
+                          ? propertyTypeLabel(val) 
+                          : p.title
+                      }));
+                    }}
+                  >
+                    <option value="">Todos os tipos</option>
+                    {propertyTypes.map((t) => (
+                      <option key={t.id} value={t.name}>
+                        {propertyTypeLabel(t.name)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            ) : (
+              <div className="pt-1">
+                <label className={labelClass}>Selecione o Destino</label>
+                <select
+                  className={inputClass}
+                  value={form.customLink}
+                  onChange={(e) => {
+                    const selected = destLinks.find(d => d.path === e.target.value);
+                    setForm((p) => ({ 
+                      ...p, 
+                      customLink: e.target.value,
+                      title: (!p.title && selected) ? selected.name : p.title
+                    }));
+                  }}
+                >
+                  <option value="">Escolha um link das configurações...</option>
+                  {destLinks.map((d) => (
+                    <option key={d.id} value={d.path}>
+                      {d.name} ({d.path})
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1.5 text-[10px] text-muted-foreground italic">
+                  * Você pode cadastrar mais links em Configurações.
+                </p>
+              </div>
+            )}
           </div>
 
           <CounterInput

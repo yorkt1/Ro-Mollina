@@ -15,11 +15,12 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        luxury: "bg-accent text-primary shadow-[0_10px_30px_hsl(var(--accent)/0.18)] hover:bg-accent/90 hover:shadow-[0_14px_34px_hsl(var(--accent)/0.24)]",
+        luxury: "bg-accent text-primary shadow-[0_8px_24px_hsl(var(--accent)/0.15)] hover:bg-accent/90 hover:shadow-[0_12px_32px_hsl(var(--accent)/0.25)]",
         luxuryOutline: "border border-white/30 bg-transparent text-white hover:bg-white/10",
         crm: "bg-primary text-primary-foreground shadow-[0_12px_28px_hsl(var(--primary)/0.18)] hover:bg-primary/90",
         crmSecondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90",
         ghostLight: "text-white hover:bg-white/10",
+        minimal: "border border-accent/30 bg-transparent text-accent hover:border-accent hover:bg-accent hover:text-primary transition-all duration-300",
       },
       size: {
         default: "h-10 px-4 py-2",

@@ -86,38 +86,38 @@ function PaginatedGrid({ items, sectionKey }: { items: Property[]; sectionKey: s
 const fallbackHighlights = [
   {
     image: property1,
-    title: "Mobiliados",
-    description: "Apartamentos mobiliados prontos para morar com conforto e sofisticação.",
-    link: "/comprar",
+    title: "Apartamentos",
+    description: "Apartamentos premium prontos para morar com conforto e sofisticação.",
+    link: "/comprar/apartamento",
   },
   {
     image: property2,
-    title: "Alto Padrão",
-    description: "Residências de alto luxo nos melhores bairros de Santa Catarina.",
-    link: "/comprar",
+    title: "Casas",
+    description: "Residências e casas de alto luxo nos melhores bairros de Santa Catarina.",
+    link: "/comprar/casa",
   },
   {
     image: property3,
     title: "Coberturas",
     description: "Coberturas com vista panorâmica, terraço privativo e design impecável.",
-    link: "/comprar",
+    link: "/comprar/cobertura",
   },
 ];
 
 const fallbackYouTubeVideos = [
   {
     youtube_id: "dQw4w9WgXcQ",
-    title: "Tour Apartamento Alto Padrão - Tatuapé",
+    title: "Casa para locação de temporada Praia de Moçambique - Bairro Rio Vermelho",
     thumbnail: property1,
   },
   {
     youtube_id: "dQw4w9WgXcQ",
-    title: "Casa Conceito Aberto - Vila Carrão",
+    title: "IMÓVEL À VENDA | CASA + LOFT (TEMPORADA) – FORTALEZA DA BARRA DA LAGOA",
     thumbnail: property2,
   },
   {
     youtube_id: "dQw4w9WgXcQ",
-    title: "Cobertura Duplex com Piscina - Anália Franco",
+    title: "Apartamento de Alto Padrão em Florianópolis",
     thumbnail: property3,
   },
 ];
@@ -154,9 +154,9 @@ export default function HomePage() {
       <RevealSection className="py-20 lg:py-28">
         <div className="container space-y-8 px-6">
           <SectionHeading
-            eyebrow="Explore"
-            title="Imóveis para seu estilo de vida"
-            description="Encontre o que combina com você: imóveis mobiliados, alto padrão e coberturas exclusivas."
+            eyebrow="Categorias"
+            title="Encontre o imóvel certo para você"
+            description="Apartamentos, casas, coberturas e terrenos — cada categoria com curadoria exclusiva para o seu perfil."
             align="center"
           />
 
@@ -253,51 +253,60 @@ export default function HomePage() {
 
           <div className="grid gap-6 md:grid-cols-3">
             {displayVideos.map((video, index) => {
-              // Extract just the video ID in case the field contains a full URL
               const ytIdMatch = video.youtube_id.match(
                 /(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/,
               );
               const ytId = ytIdMatch ? ytIdMatch[1] : video.youtube_id;
               return (
-              <a
-                key={index}
-                href={`https://www.youtube.com/watch?v=${ytId}`}
-                target="_blank"
-                rel="noreferrer"
-                className="group relative block overflow-hidden rounded-sm bg-card card-hover"
-              >
-                <div className="relative aspect-video overflow-hidden">
-                  <img
-                    src={video.thumbnail}
-                    alt={video.title}
-                    className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center bg-foreground/30 transition-colors group-hover:bg-foreground/40">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-primary shadow-lg transition-transform group-hover:scale-110">
-                      <Play size={28} className="ml-1" />
+                <a
+                  key={index}
+                  href={`https://www.youtube.com/watch?v=${ytId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group relative block overflow-hidden rounded-sm bg-card transition-all duration-300 hover:shadow-lg"
+                >
+                  <div className="relative aspect-video overflow-hidden">
+                    <img
+                      src={video.thumbnail}
+                      alt={video.title}
+                      className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-foreground/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent/90 text-primary shadow-xl backdrop-blur-sm transition-transform duration-300 group-hover:scale-110">
+                        <Play size={20} className="ml-1" fill="currentColor" />
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="p-4">
-                  <p className="font-serif text-sm font-semibold text-foreground line-clamp-2">{video.title}</p>
-                </div>
-              </a>
+                  <div className="p-4 border-t border-border/50">
+                    <p className="font-serif text-sm font-medium leading-snug text-foreground line-clamp-2 transition-colors group-hover:text-accent">
+                      {video.title}
+                    </p>
+                  </div>
+                </a>
               );
             })}
+          </div>
+
+          <div className="flex justify-center pt-4">
+            <Button asChild variant="minimal" className="px-8">
+              <a href="https://www.youtube.com/@RoMollina" target="_blank" rel="noreferrer">
+                Ver canal no YouTube
+              </a>
+            </Button>
           </div>
         </div>
       </RevealSection>
 
       {/* ─── About ─── */}
-      <RevealSection className="py-20 lg:py-28">
-        <div className="container grid gap-12 px-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-          <div className="relative mx-auto w-full max-w-md">
+      <RevealSection className="py-20 lg:py-28" id="sobre">
+        <div className="container grid gap-12 px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <div className="relative mx-auto w-full max-w-sm">
             <div className="absolute -inset-4 rounded-sm bg-accent/10" />
             <img
               src={aboutImg}
               alt="Ro Molina, corretora de imóveis"
-              className="relative mx-auto w-full max-w-md rounded-sm"
+              className="relative mx-auto w-full max-w-sm rounded-sm shadow-xl"
               loading="lazy"
             />
           </div>
