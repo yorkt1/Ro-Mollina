@@ -500,6 +500,45 @@ export const propertyTypeLabel = (type: PropertyType) => {
   return labels[type] || (type ? type.charAt(0).toUpperCase() + type.slice(1) : "");
 };
 
+export const LOCATION_GROUPS = [
+  {
+    city: "Florianópolis",
+    neighborhoods: [
+      "Centro", "Agronômica", "Trindade", "Itacorubi", "Santa Mônica",
+      "Córrego Grande", "João Paulo", "Pantanal", "Monte Verde", "Saco Grande",
+      "Cacupé", "Santo Antônio de Lisboa", "Sambaqui", "Jurerê",
+      "Jurerê Internacional", "Canasvieiras", "Cachoeira do Bom Jesus",
+      "Ponta das Canas", "Praia Brava", "Ingleses", "Santinho",
+      "Rio Vermelho", "São João do Rio Vermelho", "Vargem Grande",
+      "Vargem Pequena", "Ratones", "Lagoa da Conceição", "Barra da Lagoa",
+      "Fortaleza da Barra da Lagoa", "Costa da Lagoa", "Rio Tavares",
+      "Joaquina", "Moçambique", "Campeche", "Novo Campeche", "Morro das Pedras",
+      "Armação", "Pântano do Sul", "Ribeirão da Ilha", "Tapera", "Carianos",
+      "Coqueiros", "Estreito", "Beira-Mar Norte"
+    ]
+  },
+  {
+    city: "São José",
+    neighborhoods: [
+      "Kobrasol", "Campinas", "Barreiros", "Areias", "Forquilhinhas",
+      "Serraria", "Ipiranga", "Bela Vista"
+    ]
+  },
+  {
+    city: "Palhoça",
+    neighborhoods: [
+      "Pedra Branca", "Pagani", "Passa Vinte", "Praia da Pinheira",
+      "Guarda do Embaú", "Ponte do Imaruim", "Bela Vista", "Caminho Novo"
+    ]
+  },
+  {
+    city: "Biguaçu",
+    neighborhoods: [
+      "Centro", "Praia João Rosa", "Bom Viver", "Deltaville", "Fundos", "Jardim Janaina"
+    ]
+  }
+];
+
 export const publicLocations = Array.from(new Set(properties.map((p) => p.neighborhood)));
 
 export const WHATSAPP_NUMBER = "5548988627634";

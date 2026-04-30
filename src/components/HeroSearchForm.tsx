@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { properties, propertyTypeLabel, publicLocations, type PropertyPurpose, type PropertyType } from "@/data/properties";
+import { properties, propertyTypeLabel, publicLocations, LOCATION_GROUPS, type PropertyPurpose, type PropertyType } from "@/data/properties";
 
 interface HeroSearchFormProps {
   variant?: "dark" | "light";
@@ -71,6 +71,9 @@ export default function HeroSearchForm({ variant = "light" }: HeroSearchFormProp
   };
 
   const theme = variant === "light" ? lightTheme : darkTheme;
+
+  const allGroupedLocations = LOCATION_GROUPS.flatMap(g => g.neighborhoods);
+  const otherLocations = publicLocations.filter(loc => !allGroupedLocations.includes(loc));
 
   return (
     <div className={`w-full max-w-md space-y-5 rounded-sm p-6 backdrop-blur-lg lg:p-8 ${theme.container}`}>
@@ -141,11 +144,24 @@ export default function HeroSearchForm({ variant = "light" }: HeroSearchFormProp
             <label className={theme.label}>Bairros</label>
             <select value={location} onChange={(e) => setLocation(e.target.value)} className={theme.select}>
               <option value="">Todos os bairros</option>
-              {publicLocations.map((loc) => (
-                <option key={loc} value={loc}>
-                  {loc}
-                </option>
+              {LOCATION_GROUPS.map((group) => (
+                <optgroup key={group.city} label={group.city}>
+                  {group.neighborhoods.map((loc) => (
+                    <option key={`${group.city}-${loc}`} value={loc}>
+                      {loc}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
+              {otherLocations.length > 0 && (
+                <optgroup label="Outras Regiões">
+                  {otherLocations.map((loc) => (
+                    <option key={`other-${loc}`} value={loc}>
+                      {loc}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </div>
 

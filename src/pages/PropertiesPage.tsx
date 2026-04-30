@@ -9,6 +9,7 @@ import {
   type PropertyPurpose,
   type PropertyType,
   propertyTypeLabel,
+  LOCATION_GROUPS,
 } from "@/data/properties";
 import { useProperties } from "@/hooks/use-properties";
 import { usePropertyTypes } from "@/hooks/use-property-types";
@@ -56,6 +57,9 @@ export default function PropertiesPage({
     () => Array.from(new Set(properties.map((p) => p.neighborhood))),
     [properties]
   );
+
+  const allGroupedLocations = useMemo(() => LOCATION_GROUPS.flatMap(g => g.neighborhoods), []);
+  const otherLocations = useMemo(() => publicLocations.filter(loc => !allGroupedLocations.includes(loc)), [publicLocations, allGroupedLocations]);
 
   // Sync filters to URL
   const updateParams = (key: string, value: string) => {
@@ -202,9 +206,20 @@ export default function PropertiesPage({
               className="h-10 rounded-sm border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors focus:border-accent sm:h-11 sm:px-4"
             >
               <option value="todos">Todos os bairros</option>
-              {publicLocations.map((item) => (
-                <option key={item} value={item}>{item}</option>
+              {LOCATION_GROUPS.map((group) => (
+                <optgroup key={group.city} label={group.city}>
+                  {group.neighborhoods.map((loc) => (
+                    <option key={`${group.city}-${loc}`} value={loc}>{loc}</option>
+                  ))}
+                </optgroup>
               ))}
+              {otherLocations.length > 0 && (
+                <optgroup label="Outras Regiões">
+                  {otherLocations.map((loc) => (
+                    <option key={`other-${loc}`} value={loc}>{loc}</option>
+                  ))}
+                </optgroup>
+              )}
             </select>
 
             <select

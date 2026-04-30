@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, SlidersHorizontal, Hash } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { properties, propertyTypeLabel, publicLocations, type PropertyPurpose, type PropertyType } from "@/data/properties";
+import { properties, propertyTypeLabel, publicLocations, LOCATION_GROUPS, type PropertyPurpose, type PropertyType } from "@/data/properties";
 import { usePropertyTypes } from "@/hooks/use-property-types";
 
 export default function SearchSection() {
@@ -40,6 +40,9 @@ export default function SearchSection() {
     "h-11 w-full rounded-sm border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-accent";
   const labelClass =
     "block text-xs uppercase tracking-[0.2em] text-accent font-semibold mb-1.5";
+
+  const allGroupedLocations = LOCATION_GROUPS.flatMap(g => g.neighborhoods);
+  const otherLocations = publicLocations.filter(loc => !allGroupedLocations.includes(loc));
 
   return (
     <section className="relative z-20 -mt-8 pb-8 overflow-hidden">
@@ -143,9 +146,20 @@ export default function SearchSection() {
                   <label className={labelClass}>Bairros</label>
                   <select value={location} onChange={(e) => setLocation(e.target.value)} className={selectClass}>
                     <option value="">Todos os bairros</option>
-                    {publicLocations.map((loc) => (
-                      <option key={loc} value={loc}>{loc}</option>
+                    {LOCATION_GROUPS.map((group) => (
+                      <optgroup key={group.city} label={group.city}>
+                        {group.neighborhoods.map((loc) => (
+                          <option key={`${group.city}-${loc}`} value={loc}>{loc}</option>
+                        ))}
+                      </optgroup>
                     ))}
+                    {otherLocations.length > 0 && (
+                      <optgroup label="Outras Regiões">
+                        {otherLocations.map((loc) => (
+                          <option key={`other-${loc}`} value={loc}>{loc}</option>
+                        ))}
+                      </optgroup>
+                    )}
                   </select>
                 </div>
 
