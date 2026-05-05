@@ -152,9 +152,9 @@ function PropertyFormModal({
     nearby: property?.nearby ?? [],
     leisure: property?.leisure ?? [],
     roomsList: property?.roomsList ?? [],
-    cep: "", // Temporary field for lookup
-    addressNumber: "", // Temporary field for maps
-    street: "", // Temporary field to hold the street name for accurate map searches
+    cep: property?.cep || (property?.fullDescription?.match(/CEP:\s*([\d]{5}-?[\d]{3})/i)?.[1]?.replace(/\D/g, "") ?? ""),
+    addressNumber: property?.addressNumber ?? "",
+    street: property?.street ?? "",
   });
 
   // Local state for comma-separated inputs to avoid "jumping" cursor bug
@@ -414,8 +414,8 @@ function PropertyFormModal({
           {/* ── Localização (Reposicionado abaixo da descrição) ── */}
           <div className="space-y-4 rounded-sm border border-accent/20 bg-accent/5 p-4">
             <p className="text-xs uppercase tracking-[0.18em] text-accent font-semibold">Localização do Imóvel</p>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-12">
+              <div className="sm:col-span-3">
                 <label className={labelClass}>CEP</label>
                 <div className="relative">
                   <input
@@ -438,7 +438,11 @@ function PropertyFormModal({
                   )}
                 </div>
               </div>
-              <div>
+              <div className="sm:col-span-7">
+                <label className={labelClass}>Rua/Logradouro</label>
+                <input className={inputClass} value={form.street} onChange={(e) => setForm((p) => ({ ...p, street: e.target.value }))} required />
+              </div>
+              <div className="sm:col-span-2">
                 <label className={labelClass}>Número</label>
                 <input 
                   className={inputClass} 
@@ -457,11 +461,11 @@ function PropertyFormModal({
                   required 
                 />
               </div>
-              <div>
+              <div className="sm:col-span-6">
                 <label className={labelClass}>Bairro</label>
                 <input className={inputClass} value={form.neighborhood} onChange={(e) => setForm((p) => ({ ...p, neighborhood: e.target.value }))} required />
               </div>
-              <div>
+              <div className="sm:col-span-6">
                 <label className={labelClass}>Cidade/UF</label>
                 <input className={inputClass} value={form.location} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} required />
               </div>

@@ -48,6 +48,9 @@ export interface Property {
   nearby?: string[];
   leisure?: string[];
   roomsList?: string[];
+  cep?: string;
+  addressNumber?: string;
+  street?: string;
 }
 
 export const properties: Property[] = [

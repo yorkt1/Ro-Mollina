@@ -48,6 +48,9 @@ function dbToProperty(db: DbProperty): Property {
     nearby: (db as any).nearby ?? [],
     leisure: (db as any).leisure ?? [],
     roomsList: (db as any).rooms_list ?? [],
+    cep: (db as any).cep ?? undefined,
+    addressNumber: (db as any).address_number ?? undefined,
+    street: (db as any).street ?? undefined,
   };
 }
 
@@ -136,6 +139,9 @@ function formToDb(form: PropertyFormData) {
     nearby: form.nearby ?? [],
     leisure: form.leisure ?? [],
     rooms_list: form.roomsList ?? [],
+    cep: form.cep || null,
+    address_number: form.addressNumber || null,
+    street: form.street || null,
   };
 }
 
