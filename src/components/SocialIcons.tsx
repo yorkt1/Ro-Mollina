@@ -3,7 +3,7 @@ import { Instagram, Facebook, Youtube } from "lucide-react";
 const socials = [
   { icon: Instagram, href: "https://www.instagram.com/romolina.imoveis/", label: "Instagram" },
   { icon: Facebook, href: "https://www.facebook.com/roMolina", label: "Facebook" },
-  { icon: Youtube, href: "https://www.youtube.com/@roMolina", label: "YouTube" },
+  { icon: Youtube, href: "https://www.youtube.com/@RoMolinaImoveis", label: "YouTube" },
 ];
 
 interface SocialIconsProps {

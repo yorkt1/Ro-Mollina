@@ -290,7 +290,7 @@ export default function HomePage() {
 
           <div className="flex justify-center pt-4">
             <Button asChild variant="minimal" className="px-8">
-              <a href="https://www.youtube.com/@RoMollina" target="_blank" rel="noreferrer">
+              <a href="https://www.youtube.com/@RoMolinaImoveis" target="_blank" rel="noreferrer">
                 Ver canal no YouTube
               </a>
             </Button>
