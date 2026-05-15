@@ -247,7 +247,7 @@ export default function AboutPage() {
             <ExpCard
               title="Corretora e Avaliadora de Imóveis"
               subtitle="Autônoma · Florianópolis/SC e Região"
-              period="2024 – Atual"
+              period="2024 –"
               bullets={[
                 "Intermediação de compra, venda e locação de imóveis",
                 "Avaliação mercadológica de imóveis urbanos",
@@ -260,7 +260,7 @@ export default function AboutPage() {
             <ExpCard
               title="Representação Comercial"
               subtitle="Segmento Fitness e Bem-Estar · Brasil"
-              period="2004 – Atual"
+              period="2004 –"
               bullets={[
                 "Atuação comercial e consultiva",
                 "Foco em empresas do segmento fitness e saúde",
