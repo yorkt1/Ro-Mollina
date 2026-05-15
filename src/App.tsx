@@ -18,6 +18,7 @@ import AdminLeadsPage from "./pages/AdminLeadsPage";
 import AdminHighlightsPage from "./pages/AdminHighlightsPage";
 import AdminYouTubePage from "./pages/AdminYouTubePage";
 import AdminSettingsPage from "./pages/AdminSettingsPage";
+import AboutPage from "./pages/AboutPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
             <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/imoveis" element={<PropertiesPage />} />
+            <Route path="/sobre" element={<AboutPage />} />
             <Route path="/comprar" element={<BuyPage />} />
             <Route path="/comprar/:type" element={<BuyPage />} />
             <Route path="/alugar" element={<RentPage />} />

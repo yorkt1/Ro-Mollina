@@ -242,12 +242,14 @@ export default function Header() {
 
             {/* Sobre */}
             <li>
-              <a
-                href="/#sobre"
-                className="nav-link text-[13px] uppercase tracking-[0.2em]"
+              <Link
+                to="/sobre"
+                className={`nav-link text-[13px] uppercase tracking-[0.2em] ${
+                  isActive("/sobre") ? "active text-foreground" : ""
+                }`}
               >
                 Sobre
-              </a>
+              </Link>
             </li>
 
             {/* Contato */}
@@ -410,13 +412,13 @@ export default function Header() {
               </Link>
             ))}
 
-            <a
-              href="/#sobre"
+            <Link
+              to="/sobre"
               className="py-2.5 text-sm uppercase tracking-[0.2em] text-foreground/70 transition-colors hover:text-foreground"
               onClick={() => setOpen(false)}
             >
               Sobre
-            </a>
+            </Link>
 
             <a
               href="/#contato"
