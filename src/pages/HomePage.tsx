@@ -187,8 +187,8 @@ export default function HomePage() {
           <div className="container space-y-10 px-6">
             <SectionHeading
               eyebrow="Imóveis à Venda"
-              title="Curadoria para quem busca comprar bem"
-              description="Seleção orientada para patrimônio, moradia e investimento com alto valor percebido."
+              title="Imóveis selecionados para viver e investir bem."
+              description="Imóveis selecionados com foco em moradia, patrimônio e oportunidades reais de valorização."
               action={
                 <Button asChild variant="crmSecondary">
                   <Link to="/comprar">
@@ -209,8 +209,8 @@ export default function HomePage() {
           <div className="container space-y-10 px-6">
             <SectionHeading
               eyebrow="Imóveis para Locação"
-              title="Locações premium com resposta rápida"
-              description="Experiência fluida para clientes executivos, famílias e perfis que precisam de agilidade com padrão elevado."
+              title="Locações selecionadas com atendimento personalizado."
+              description="Atendimento próximo e locações selecionadas para quem busca praticidade, segurança e boa experiência."
               action={
                 <Button asChild variant="crmSecondary">
                   <Link to="/alugar">
@@ -231,8 +231,8 @@ export default function HomePage() {
           <div className="container space-y-10 px-6">
             <SectionHeading
               eyebrow="Exclusividades"
-              title="Imóveis com selo de exclusividade"
-              description="Oportunidades únicas negociadas diretamente, com condições especiais e atendimento diferenciado."
+              title="Imóveis selecionados e oportunidades diferenciadas."
+              description="Imóveis com potencial, exclusividade e atendimento consultivo."
               isDark={true}
             />
 
@@ -246,7 +246,7 @@ export default function HomePage() {
         <div className="container space-y-10 px-6">
           <SectionHeading
             eyebrow="Molina no YouTube"
-            title="Os Melhores Imóveis de Santa Catarina"
+            title="Imóveis, oportunidades e experiências em Florianópolis."
             description="Acompanhe tours exclusivos, dicas de mercado e as melhores oportunidades em vídeo."
             align="center"
           />
@@ -314,11 +314,11 @@ export default function HomePage() {
           <div className="space-y-6">
             <SectionHeading
               eyebrow="Sobre a corretora"
-              title="Presença sofisticada, atendimento próximo e posicionamento forte."
-              description="Ro Molina atua com imóveis de alto padrão em Santa Catarina, unindo atendimento humano, apresentação cuidadosa e inteligência comercial para venda e locação."
+              title="Mais do que vender imóveis, conectar pessoas às escolhas certas."
+              description="Ro Molina atua na Grande Florianópolis com foco em imóveis, patrimônio, avaliação imobiliária e atendimento personalizado para compra, venda e locação."
             />
             <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
-              Com experiência consolidada no mercado imobiliário de Florianópolis, Ro Molina é referência em consultoria para compra, venda e locação de imóveis premium na ilha.
+              Com atuação voltada à estratégia patrimonial, experiência do cliente e apresentação cuidadosa dos imóveis, Ro Molina oferece um atendimento próximo, consultivo e profissional.
             </p>
             <Button asChild variant="luxury" size="lg">
               <a href={whatsappLink()} target="_blank" rel="noreferrer">

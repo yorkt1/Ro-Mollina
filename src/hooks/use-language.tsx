@@ -47,7 +47,7 @@ const translations: Record<Language, Translations> = {
     listProperty: "Negocie seu Imóvel",
     heroTitle: "Rosemarie Macedo Molina",
     heroSubtitle: "Corretora e Avaliadora de Imóveis",
-    heroDescription: "Venda, locação e consultoria imobiliária premium em Florianópolis e região.",
+    heroDescription: "Imóveis, patrimônio e consultoria especializada em Florianópolis e região.",
     creci: "CRECI/SC 72089F | CNAI 57385",
     viewProperties: "Ver imóveis",
     buyTab: "Comprar",
