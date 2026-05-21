@@ -81,9 +81,15 @@ function VideoFormModal({
   const [form, setForm] = useState({
     title: video?.title ?? "",
     youtube_id: video?.youtube_id ?? "",
+    youtube_url: video?.youtube_id ? `https://www.youtube.com/watch?v=${video.youtube_id}` : "",
     thumbnail: video?.thumbnail ?? "",
     sort_order: video?.sort_order ?? currentCount + 1,
   });
+
+  const extractYouTubeId = (val: string) => {
+    const match = val.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+    return match ? match[1] : val.trim();
+  };
 
   const [uploading, setUploading] = useState(false);
 
@@ -105,12 +111,14 @@ function VideoFormModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const { youtube_url, ...rest } = form;
+    const payload = { ...rest, youtube_id: extractYouTubeId(youtube_url) };
     try {
       if (isEditing && video) {
-        await updateMutation.mutateAsync({ id: video.id, ...form });
+        await updateMutation.mutateAsync({ id: video.id, ...payload });
         toast({ title: "Vídeo atualizado!" });
       } else {
-        await createMutation.mutateAsync(form);
+        await createMutation.mutateAsync(payload);
         toast({ title: "Vídeo adicionado!" });
       }
       onClose();
@@ -148,15 +156,19 @@ function VideoFormModal({
           </div>
 
           <div>
-            <label className={labelClass}>ID do YouTube</label>
-            <input className={inputClass} value={form.youtube_id} onChange={(e) => {
-              const val = e.target.value;
-              const match = val.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
-              setForm((p) => ({ ...p, youtube_id: match ? match[1] : val }));
-            }} required placeholder="Ex: https://www.youtube.com/watch?v=ZeNdFFmANnA ou só o ID" />
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              Cole o link completo ou apenas o ID do vídeo
-            </p>
+            <label className={labelClass}>Link do YouTube</label>
+            <input
+              className={inputClass}
+              value={form.youtube_url}
+              onChange={(e) => setForm((p) => ({ ...p, youtube_url: e.target.value }))}
+              required
+              placeholder="Ex: https://www.youtube.com/watch?v=ZeNdFFmANnA"
+            />
+            {form.youtube_url && (
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                ID extraído: <span className="font-medium text-foreground">{extractYouTubeId(form.youtube_url)}</span>
+              </p>
+            )}
           </div>
 
           <CounterInput
@@ -191,10 +203,13 @@ function VideoFormModal({
                   )}
                   <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" disabled={uploading} />
                 </label>
-                {form.youtube_id && (
+                {form.youtube_url && (
                   <button
                     type="button"
-                    onClick={() => setForm((p) => ({ ...p, thumbnail: `https://img.youtube.com/vi/${p.youtube_id}/maxresdefault.jpg` }))}
+                    onClick={() => {
+                      const id = extractYouTubeId(form.youtube_url);
+                      setForm((p) => ({ ...p, thumbnail: `https://img.youtube.com/vi/${id}/maxresdefault.jpg` }));
+                    }}
                     className="text-xs text-accent hover:underline"
                   >
                     Ou usar thumbnail automática do YouTube
