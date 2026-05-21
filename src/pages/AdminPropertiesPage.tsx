@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
-import { Loader2, MapPin, PencilLine, Plus, Minus, Star, Trash2, X, ImagePlus, ArrowLeft, ArrowRight, GripVertical } from "lucide-react";
+import { Loader2, MapPin, PencilLine, Plus, Minus, Star, Trash2, X, ImagePlus, ArrowLeft, ArrowRight, GripVertical, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPropertyPrice, propertyTypeLabel, purposeLabel, type Property, type PropertyType, type PropertyPurpose } from "@/data/properties";
 import { useProperties, useCreateProperty, useUpdateProperty, useDeleteProperty, uploadPropertyImage, type PropertyFormData } from "@/hooks/use-properties";
