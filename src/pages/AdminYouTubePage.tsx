@@ -149,9 +149,13 @@ function VideoFormModal({
 
           <div>
             <label className={labelClass}>ID do YouTube</label>
-            <input className={inputClass} value={form.youtube_id} onChange={(e) => setForm((p) => ({ ...p, youtube_id: e.target.value }))} required placeholder="Ex: dQw4w9WgXcQ (parte após v=)" />
+            <input className={inputClass} value={form.youtube_id} onChange={(e) => {
+              const val = e.target.value;
+              const match = val.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+              setForm((p) => ({ ...p, youtube_id: match ? match[1] : val }));
+            }} required placeholder="Ex: https://www.youtube.com/watch?v=ZeNdFFmANnA ou só o ID" />
             <p className="mt-1.5 text-xs text-muted-foreground">
-              Cole apenas o ID do vídeo. Ex: se o link é youtube.com/watch?v=<strong>abc123</strong>, cole <strong>abc123</strong>
+              Cole o link completo ou apenas o ID do vídeo
             </p>
           </div>
 
