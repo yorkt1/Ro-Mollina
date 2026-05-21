@@ -81,7 +81,6 @@ function VideoFormModal({
   const [form, setForm] = useState({
     title: video?.title ?? "",
     youtube_id: video?.youtube_id ?? "",
-    youtube_url: video?.youtube_id ? `https://www.youtube.com/watch?v=${video.youtube_id}` : "",
     thumbnail: video?.thumbnail ?? "",
     sort_order: video?.sort_order ?? currentCount + 1,
   });
@@ -111,14 +110,12 @@ function VideoFormModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { youtube_url, ...rest } = form;
-    const payload = { ...rest, youtube_id: extractYouTubeId(youtube_url) };
     try {
       if (isEditing && video) {
-        await updateMutation.mutateAsync({ id: video.id, ...payload });
+        await updateMutation.mutateAsync({ id: video.id, ...form });
         toast({ title: "Vídeo atualizado!" });
       } else {
-        await createMutation.mutateAsync(payload);
+        await createMutation.mutateAsync(form);
         toast({ title: "Vídeo adicionado!" });
       }
       onClose();
@@ -159,16 +156,11 @@ function VideoFormModal({
             <label className={labelClass}>Link do YouTube</label>
             <input
               className={inputClass}
-              value={form.youtube_url}
-              onChange={(e) => setForm((p) => ({ ...p, youtube_url: e.target.value }))}
+              value={form.youtube_id}
+              onChange={(e) => setForm((p) => ({ ...p, youtube_id: e.target.value }))}
               required
               placeholder="Ex: https://www.youtube.com/watch?v=ZeNdFFmANnA"
             />
-            {form.youtube_url && (
-              <p className="mt-1.5 text-xs text-muted-foreground">
-                ID extraído: <span className="font-medium text-foreground">{extractYouTubeId(form.youtube_url)}</span>
-              </p>
-            )}
           </div>
 
           <CounterInput
@@ -203,11 +195,11 @@ function VideoFormModal({
                   )}
                   <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" disabled={uploading} />
                 </label>
-                {form.youtube_url && (
+                {form.youtube_id && (
                   <button
                     type="button"
                     onClick={() => {
-                      const id = extractYouTubeId(form.youtube_url);
+                      const id = extractYouTubeId(form.youtube_id);
                       setForm((p) => ({ ...p, thumbnail: `https://img.youtube.com/vi/${id}/maxresdefault.jpg` }));
                     }}
                     className="text-xs text-accent hover:underline"
@@ -315,7 +307,7 @@ export default function AdminYouTubePage() {
               </div>
               <div className="p-5 space-y-3">
                 <h3 className="font-serif text-lg font-semibold text-foreground">{v.title}</h3>
-                <p className="text-xs text-muted-foreground/60">ID: {v.youtube_id}</p>
+                <p className="text-xs text-muted-foreground/60 truncate">Link: {v.youtube_id}</p>
                 <div className="flex gap-2 pt-2">
                   <Button variant="crmSecondary" size="sm" onClick={() => setModal({ open: true, video: v })}>
                     <PencilLine size={14} /> Editar
