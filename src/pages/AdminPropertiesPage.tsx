@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
-import { Loader2, MapPin, PencilLine, Plus, Minus, Star, Trash2, X, ImagePlus, ArrowLeft, ArrowRight, GripVertical, Upload } from "lucide-react";
+import { Loader2, MapPin, PencilLine, Plus, Minus, Star, Trash2, X, ImagePlus, ArrowLeft, ArrowRight, GripVertical, Upload, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPropertyPrice, propertyTypeLabel, purposeLabel, type Property, type PropertyType, type PropertyPurpose } from "@/data/properties";
 import { useProperties, useCreateProperty, useUpdateProperty, useDeleteProperty, uploadPropertyImage, type PropertyFormData } from "@/hooks/use-properties";
@@ -186,36 +186,46 @@ function PropertyFormModal({
     const cleaned = cep.replace(/\D/g, "");
     if (cleaned.length !== 8) return;
 
+    const applyAddress = (city: string, uf: string, neighborhood: string, street: string) => {
+      const newLocation = `${city}/${uf}`;
+      const detectedZone = city.toLowerCase().includes("florian") ? getFloripaZone(neighborhood) : "";
+      setForm((p) => ({
+        ...p,
+        neighborhood: neighborhood,
+        location: newLocation,
+        zone: detectedZone || p.zone,
+        region: city || p.region,
+        cep: cleaned,
+        street: street,
+        mapEmbedUrl: `https://maps.google.com/maps?q=${encodeURIComponent(
+          `${street}${p.addressNumber ? ", " + p.addressNumber : ""}, ${neighborhood}, ${newLocation}`.trim().replace(/^,/, "").trim()
+        )}&output=embed&hl=pt-BR`
+      }));
+      setMapPreview(`https://maps.google.com/maps?q=${encodeURIComponent(
+        `${street}${form.addressNumber ? ", " + form.addressNumber : ""}, ${neighborhood}, ${newLocation}`.trim().replace(/^,/, "").trim()
+      )}&output=embed&hl=pt-BR`);
+      toast({ title: "Endereço preenchido!" });
+    };
+
     setSearchingCep(true);
     try {
+      // Tenta ViaCEP primeiro
       const res = await fetch(`https://viacep.com.br/ws/${cleaned}/json/`);
       const data = await res.json();
-      if (data.erro) {
-        toast({ title: "CEP não encontrado", variant: "destructive" });
-      } else {
-        const newLocation = `${data.localidade}/${data.uf}`;
-        const newNeighborhood = data.bairro || "";
-        const detectedZone = data.localidade.toLowerCase().includes("florian") ? getFloripaZone(newNeighborhood) : "";
-        
-        const streetName = data.logradouro || "";
-        setForm((p) => ({
-          ...p,
-          neighborhood: newNeighborhood,
-          location: newLocation,
-          zone: detectedZone || p.zone,
-          region: data.localidade || p.region,
-          cep: cleaned,
-          street: streetName,
-          // Generate an embeddable Google Maps link automatically
-          mapEmbedUrl: `https://maps.google.com/maps?q=${encodeURIComponent(
-            `${streetName}${p.addressNumber ? ", " + p.addressNumber : ""}, ${newNeighborhood}, ${newLocation}`.trim().replace(/^,/, "").trim()
-          )}&output=embed&hl=pt-BR`
-        }));
-        setMapPreview(`https://maps.google.com/maps?q=${encodeURIComponent(
-          `${streetName}${form.addressNumber ? ", " + form.addressNumber : ""}, ${newNeighborhood}, ${newLocation}`.trim().replace(/^,/, "").trim()
-        )}&output=embed&hl=pt-BR`);
-        toast({ title: "Endereço preenchido!" });
+      if (!data.erro) {
+        applyAddress(data.localidade, data.uf, data.bairro || "", data.logradouro || "");
+        return;
       }
+
+      // Fallback: BrasilAPI (cobre CEPs gerais de município que o ViaCEP não tem)
+      const res2 = await fetch(`https://brasilapi.com.br/api/cep/v2/${cleaned}`);
+      if (res2.ok) {
+        const data2 = await res2.json();
+        applyAddress(data2.city, data2.state, data2.neighborhood || "", data2.street || "");
+        return;
+      }
+
+      toast({ title: "CEP não encontrado. Preencha o endereço manualmente." });
     } catch {
       toast({ title: "Erro na busca do CEP", variant: "destructive" });
     } finally {
@@ -417,13 +427,14 @@ function PropertyFormModal({
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-12">
               <div className="sm:col-span-3">
                 <label className={labelClass}>CEP</label>
-                <div className="relative">
+                <div className="relative flex gap-2">
                   <input
                     className={inputClass}
-                    value={form.cep}
+                    value={form.cep.length > 5 ? `${form.cep.slice(0, 5)}-${form.cep.slice(5)}` : form.cep}
                     placeholder="00000-000"
+                    maxLength={9}
                     onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, "");
+                      const val = e.target.value.replace(/\D/g, "").slice(0, 8);
                       setForm(p => ({ ...p, cep: val }));
                       if (val.length === 8) {
                         handleCepLookup(val);
@@ -431,11 +442,15 @@ function PropertyFormModal({
                     }}
                     required
                   />
-                  {searchingCep && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <Loader2 size={14} className="animate-spin text-accent" />
-                    </div>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleCepLookup(form.cep)}
+                    disabled={form.cep.length !== 8 || searchingCep}
+                    className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-sm border border-accent/30 bg-accent/10 text-accent hover:bg-accent/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    title="Buscar CEP"
+                  >
+                    {searchingCep ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
+                  </button>
                 </div>
               </div>
               <div className="sm:col-span-7">
