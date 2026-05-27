@@ -81,8 +81,12 @@ function toMapEmbedUrl(url: string): string | null {
 const isShortMapsUrl = (url: string) =>
   url.includes("goo.gl") || url.includes("maps.app.goo.gl");
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const SUPABASE_URL =
+  (import.meta.env.VITE_SUPABASE_URL as string | undefined) ||
+  "https://kujwgpumdggggbnxuhem.supabase.co";
+const SUPABASE_ANON_KEY =
+  (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1andncHVtZGdnZ2dibnh1aGVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNzgyNzIsImV4cCI6MjA5MTc1NDI3Mn0.if2iY21S6reNWF0b3SfJ02jCarorP1DRamW0SI2knTU";
 
 function SmartMap({ url }: { url: string }) {
   const [resolvedSrc, setResolvedSrc] = useState<string | null>(null);

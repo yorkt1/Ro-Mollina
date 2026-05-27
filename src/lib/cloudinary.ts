@@ -13,8 +13,12 @@ async function getCloudinarySignature(
   timestamp: string,
   folder: string,
 ): Promise<{ signature: string; api_key: string; cloud_name: string }> {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+  const supabaseUrl =
+    (import.meta.env.VITE_SUPABASE_URL as string | undefined) ||
+    "https://kujwgpumdggggbnxuhem.supabase.co";
+  const supabaseAnonKey =
+    (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) ||
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1andncHVtZGdnZ2dibnh1aGVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNzgyNzIsImV4cCI6MjA5MTc1NDI3Mn0.if2iY21S6reNWF0b3SfJ02jCarorP1DRamW0SI2knTU";
 
   const response = await fetch(
     `${supabaseUrl}/functions/v1/sign-cloudinary-upload`,
