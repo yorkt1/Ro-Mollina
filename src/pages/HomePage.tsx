@@ -104,23 +104,9 @@ const fallbackHighlights = [
   },
 ];
 
-const fallbackYouTubeVideos = [
-  {
-    youtube_id: "dQw4w9WgXcQ",
-    title: "Casa para locação de temporada Praia de Moçambique - Bairro Rio Vermelho",
-    thumbnail: property1,
-  },
-  {
-    youtube_id: "dQw4w9WgXcQ",
-    title: "IMÓVEL À VENDA | CASA + LOFT (TEMPORADA) – FORTALEZA DA BARRA DA LAGOA",
-    thumbnail: property2,
-  },
-  {
-    youtube_id: "dQw4w9WgXcQ",
-    title: "Apartamento de Alto Padrão em Florianópolis",
-    thumbnail: property3,
-  },
-];
+// Sem fallback de vídeos — se o Supabase estiver vazio, a seção fica oculta.
+// Cadastre os vídeos reais pelo painel admin (/admin/youtube).
+const fallbackYouTubeVideos: { youtube_id: string; title: string; thumbnail: string }[] = [];
 
 export default function HomePage() {
   const { data: properties = [], isLoading } = useProperties();
@@ -241,8 +227,8 @@ export default function HomePage() {
         </RevealSection>
       )}
 
-      {/* ─── YouTube Section ─── */}
-      <RevealSection className="py-20 lg:py-28 bg-secondary/45">
+      {/* ─── YouTube Section — só aparece quando há vídeos cadastrados no Supabase ─── */}
+      {displayVideos.length > 0 && <RevealSection className="py-20 lg:py-28 bg-secondary/45">
         <div className="container space-y-10 px-6">
           <SectionHeading
             eyebrow="Molina no YouTube"
@@ -296,7 +282,7 @@ export default function HomePage() {
             </Button>
           </div>
         </div>
-      </RevealSection>
+      </RevealSection>}
 
       {/* ─── About ─── */}
       <RevealSection className="py-20 lg:py-28" id="sobre">

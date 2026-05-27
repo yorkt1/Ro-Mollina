@@ -41,7 +41,7 @@ export default function Footer() {
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-white/50 sm:flex-row">
           <p>© {new Date().getFullYear()} Ro Molina. Todos os direitos reservados.</p>
           <p>
-            Desenvolvido por <a href="https://www.softvances.com.br/" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-white">https://www.softvances.com.br/</a>
+            Desenvolvido por <a href="https://www.softvances.com.br/" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-white">softvances.com.br</a>
           </p>
         </div>
       </div>
