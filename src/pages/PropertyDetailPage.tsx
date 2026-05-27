@@ -437,11 +437,13 @@ export default function PropertyDetailPage() {
     `${property.bathrooms} banheiro${property.bathrooms !== 1 ? "s" : ""}, ${property.area} m². ` +
     `${property.neighborhood}, Florianópolis/SC. CRECI-SC 72089F.`;
 
+  const siteUrl = (import.meta.env.VITE_SITE_URL as string | undefined) ?? "https://romolinaimoveis.com.br";
+
   const propertyJsonLd = {
     "@type": "Apartment",
     name: property.title,
     description: property.description,
-    url: `https://romolina.com.br/imovel/${property.id}`,
+    url: `${siteUrl}/imovel/${property.id}`,
     image: property.images,
     numberOfRooms: property.bedrooms,
     numberOfBathroomsTotal: property.bathrooms,

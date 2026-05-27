@@ -131,8 +131,8 @@ export default function HomePage() {
     {
       "@type": "RealEstateAgent",
       name: "Ro Molina Imóveis",
-      url: "https://romolina.com.br",
-      logo: "https://romolina.com.br/og-image.png",
+      url: "https://romolinaimoveis.com.br",
+      logo: "https://romolinaimoveis.com.br/og-image.png",
       description:
         "Corretora de imóveis de alto padrão na Grande Florianópolis — compra, venda e locação com atendimento personalizado.",
       areaServed: "Florianópolis, SC, Brasil",

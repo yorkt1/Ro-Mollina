@@ -10,7 +10,7 @@
 
 import { Helmet } from "react-helmet-async";
 
-const SITE_URL = (import.meta.env.VITE_SITE_URL as string | undefined) ?? "https://romolina.com.br";
+const SITE_URL = (import.meta.env.VITE_SITE_URL as string | undefined) ?? "https://romolinaimoveis.com.br";
 const SITE_NAME = "Ro Molina Imóveis";
 const DEFAULT_DESCRIPTION =
   "Imóveis de alto padrão em Florianópolis. Apartamentos, casas e coberturas com atendimento exclusivo. CRECI-SC 72089F.";
