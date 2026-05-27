@@ -15,7 +15,7 @@ export function useScrollReveal<T extends HTMLElement = HTMLDivElement>() {
           observer.unobserve(el);
         }
       },
-      { threshold: 0.15 }
+      { threshold: 0.05 }
     );
 
     observer.observe(el);
