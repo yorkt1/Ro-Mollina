@@ -19,6 +19,7 @@ import { useProperties } from "@/hooks/use-properties";
 import { useLifestyleHighlights } from "@/hooks/use-highlights";
 import { useYouTubeVideos } from "@/hooks/use-youtube-videos";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
+import SEO from "@/components/SEO";
 
 function RevealSection({ children, className = "", id }: { children: ReactNode; className?: string; id?: string }) {
   const { ref, revealed } = useScrollReveal<HTMLElement>();
@@ -126,8 +127,47 @@ export default function HomePage() {
     ? youtubeVideos.map((v) => ({ youtube_id: v.youtube_id, title: v.title, thumbnail: v.thumbnail }))
     : fallbackYouTubeVideos;
 
+  const homeJsonLd = [
+    {
+      "@type": "RealEstateAgent",
+      name: "Ro Molina Imóveis",
+      url: "https://romolina.com.br",
+      logo: "https://romolina.com.br/og-image.png",
+      description:
+        "Corretora de imóveis de alto padrão na Grande Florianópolis — compra, venda e locação com atendimento personalizado.",
+      areaServed: "Florianópolis, SC, Brasil",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Florianópolis",
+        addressRegion: "SC",
+        addressCountry: "BR",
+      },
+      contactPoint: {
+        "@type": "ContactPoint",
+        telephone: "+55-48-98862-7634",
+        contactType: "customer service",
+        availableLanguage: "Portuguese",
+      },
+      sameAs: ["https://www.instagram.com/ro.molina.imoveis", "https://www.youtube.com/@RoMolinaImoveis"],
+    },
+    {
+      "@type": "Person",
+      name: "Ro Molina",
+      jobTitle: "Corretora de Imóveis",
+      worksFor: { "@type": "Organization", name: "Ro Molina Imóveis" },
+      hasCredential: "CRECI-SC 72089F",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Florianópolis",
+        addressRegion: "SC",
+        addressCountry: "BR",
+      },
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
+      <SEO url="/" jsonLd={homeJsonLd} />
       <Header />
 
       {/* ─── Hero Section ─── */}

@@ -13,6 +13,7 @@ import PropertyCard from "@/components/PropertyCard";
 import { Button } from "@/components/ui/button";
 import { formatPropertyPrice, propertyTypeLabel, purposeLabel, whatsappLink } from "@/data/properties";
 import { useProperty, useProperties } from "@/hooks/use-properties";
+import SEO from "@/components/SEO";
 
 /* ── helpers ─────────────────────────────────── */
 
@@ -80,7 +81,7 @@ function toMapEmbedUrl(url: string): string | null {
 const isShortMapsUrl = (url: string) =>
   url.includes("goo.gl") || url.includes("maps.app.goo.gl");
 
-const SUPABASE_URL = "https://kujwgpumdggggbnxuhem.supabase.co";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
 function SmartMap({ url }: { url: string }) {
@@ -430,8 +431,47 @@ export default function PropertyDetailPage() {
     }
   };
 
+  // ── SEO ──────────────────────────────────────────────────────────────
+  const seoDescription =
+    `${property.description} ${property.bedrooms} quarto${property.bedrooms !== 1 ? "s" : ""}, ` +
+    `${property.bathrooms} banheiro${property.bathrooms !== 1 ? "s" : ""}, ${property.area} m². ` +
+    `${property.neighborhood}, Florianópolis/SC. CRECI-SC 72089F.`;
+
+  const propertyJsonLd = {
+    "@type": "Apartment",
+    name: property.title,
+    description: property.description,
+    url: `https://romolina.com.br/imovel/${property.id}`,
+    image: property.images,
+    numberOfRooms: property.bedrooms,
+    numberOfBathroomsTotal: property.bathrooms,
+    floorSize: { "@type": "QuantitativeValue", value: property.area, unitCode: "MTK" },
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Florianópolis",
+      addressRegion: "SC",
+      addressCountry: "BR",
+      neighborhood: property.neighborhood,
+    },
+    ...(property.price > 0 && {
+      offers: {
+        "@type": "Offer",
+        price: property.price,
+        priceCurrency: "BRL",
+        availability: "https://schema.org/InStock",
+      },
+    }),
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title={`${property.title} — ${property.neighborhood}`}
+        description={seoDescription}
+        url={`/imovel/${property.id}`}
+        image={property.images[0]}
+        jsonLd={propertyJsonLd}
+      />
       <Header />
 
       {/* ─── Back + Breadcrumb ─── */}

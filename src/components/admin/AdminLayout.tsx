@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import SEO from "@/components/SEO";
 import { Building2, TrendingUp, Sparkles, Youtube, Menu, X, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
@@ -27,6 +28,7 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Painel Admin" noIndex />
       {/* Mobile top bar */}
       <div className="border-b border-border bg-card md:hidden">
         <div className="flex items-center justify-between px-4 py-4">

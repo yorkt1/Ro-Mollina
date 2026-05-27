@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Página inicial -->
+  <url>
+    <loc>https://romolina.com.br/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Portfólio completo -->
+  <url>
+    <loc>https://romolina.com.br/imoveis</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Imóveis à venda -->
+  <url>
+    <loc>https://romolina.com.br/comprar</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Imóveis para alugar -->
+  <url>
+    <loc>https://romolina.com.br/alugar</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Sobre -->
+  <url>
+    <loc>https://romolina.com.br/sobre</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!--
+    Páginas individuais de imóveis (/imovel/:id) são descobertas
+    pelos crawlers através das listagens acima.
+    Para gerar URLs dinâmicas, considere um script de build
+    que consulte o Supabase e adicione entradas neste arquivo.
+  -->
+
+</urlset>

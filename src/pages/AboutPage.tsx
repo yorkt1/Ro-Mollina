@@ -23,6 +23,7 @@ import Footer from "@/components/Footer";
 import aboutImg from "@/assets/about-realtor.png";
 import { whatsappLink } from "@/data/properties";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
+import SEO from "@/components/SEO";
 
 /* ── Scroll‑reveal wrapper ── */
 function Reveal({
@@ -110,6 +111,11 @@ function AreaChip({ icon: Icon, label }: { icon: React.ElementType; label: strin
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Sobre Ro Molina — Corretora de Imóveis em Florianópolis"
+        description="Conheça Ro Molina, corretora de imóveis de alto padrão na Grande Florianópolis. Atendimento personalizado para compra, venda e locação. CRECI-SC 72089F."
+        url="/sobre"
+      />
       <Header />
 
       {/* ── Hero banner ── */}

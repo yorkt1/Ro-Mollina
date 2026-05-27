@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useSearchParams, useParams } from "react-router-dom";
+import SEO from "@/components/SEO";
 import { Loader2, Search, X } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -140,8 +141,26 @@ export default function PropertiesPage({
     ? `Veja todos os imóveis do tipo ${propertyTypeLabel(type).toLowerCase()} disponíveis.`
     : pageSubtitle;
 
+  const seoTitle =
+    defaultPurpose === "venda"
+      ? "Imóveis à Venda em Florianópolis"
+      : defaultPurpose === "aluguel"
+        ? "Imóveis para Alugar em Florianópolis"
+        : "Portfólio de Imóveis em Florianópolis";
+
+  const seoDescription =
+    defaultPurpose === "venda"
+      ? "Apartamentos, casas e coberturas à venda em Florianópolis. Curadoria exclusiva por Ro Molina. CRECI-SC 72089F."
+      : defaultPurpose === "aluguel"
+        ? "Apartamentos e coberturas para locação em Florianópolis com atendimento personalizado por Ro Molina. CRECI-SC 72089F."
+        : "Portfólio completo de imóveis para compra e aluguel em Florianópolis, curado por Ro Molina. CRECI-SC 72089F.";
+
+  const seoUrl =
+    defaultPurpose === "venda" ? "/comprar" : defaultPurpose === "aluguel" ? "/alugar" : "/imoveis";
+
   return (
     <div className="min-h-screen bg-background">
+      <SEO title={seoTitle} description={seoDescription} url={seoUrl} />
       <Header />
 
       <section className="bg-muted pt-28 pb-16 border-b border-border">
