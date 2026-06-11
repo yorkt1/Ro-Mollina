@@ -68,6 +68,8 @@ export default function SEO({
       <meta property="og:description" content={description} />
       <meta property="og:type" content={type} />
       {ogImage && <meta property="og:image" content={ogImage} />}
+      {ogImage && <meta property="og:image:secure_url" content={ogImage} />}
+      {ogImage && <meta property="og:image:alt" content={fullTitle} />}
       <meta property="og:site_name" content={SITE_NAME} />
       <meta property="og:locale" content="pt_BR" />
       {canonical && <meta property="og:url" content={canonical} />}
@@ -77,6 +79,7 @@ export default function SEO({
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
       {ogImage && <meta name="twitter:image" content={ogImage} />}
+      {ogImage && <meta name="twitter:image:alt" content={fullTitle} />}
 
       {/* JSON-LD */}
       {schemas && (
