@@ -50,8 +50,8 @@ const App = () => (
               <Route path="youtube" element={<AdminYouTubePage />} />
               <Route path="configuracoes" element={<AdminSettingsPage />} />
             </Route>
-            {/* Clean property detail route — no conflict */}
-            <Route path="/imovel/:id" element={<PropertyDetailPage />} />
+            {/* SEO-friendly property URLs with optional slug; UUID stays as the main identifier */}
+            <Route path="/imovel/:id/:slug?" element={<PropertyDetailPage />} />
             <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

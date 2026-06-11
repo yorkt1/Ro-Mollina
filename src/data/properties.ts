@@ -8,6 +8,7 @@ export type PropertyPurpose = "venda" | "aluguel";
 
 export interface Property {
   id: string;
+  shortId?: number;
   title: string;
   description: string;
   fullDescription?: string;

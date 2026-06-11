@@ -2,11 +2,12 @@ import { Link } from "react-router-dom";
 import { Bath, BedDouble, Car, MapPin, Maximize, Tag } from "lucide-react";
 import { Property, formatPropertyPrice, propertyTypeLabel, purposeLabel } from "@/data/properties";
 import { cloudinaryUrl } from "@/lib/cloudinary";
+import { propertyPath } from "@/lib/property-links";
 
 export default function PropertyCard({ property }: { property: Property }) {
   return (
     <Link
-      to={`/imovel/${property.id}`}
+      to={propertyPath(property)}
       className="group block overflow-hidden rounded-sm bg-card card-hover"
     >
       <div className="relative aspect-[4/3] overflow-hidden">

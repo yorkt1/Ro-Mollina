@@ -297,6 +297,12 @@ export default function HomePage() {
                       alt={video.title}
                       className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                       loading="lazy"
+                      onError={(e) => {
+                        const img = e.currentTarget;
+                        if (img.src.includes("maxresdefault")) {
+                          img.src = img.src.replace("maxresdefault", "hqdefault");
+                        }
+                      }}
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-foreground/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent/90 text-primary shadow-xl backdrop-blur-sm transition-transform duration-300 group-hover:scale-110">

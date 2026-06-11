@@ -175,7 +175,17 @@ function VideoFormModal({
             <label className={labelClass}>Thumbnail</label>
             {form.thumbnail ? (
               <div className="group relative aspect-video overflow-hidden rounded-sm border border-border">
-                <img src={form.thumbnail} alt="Preview" className="h-full w-full object-cover" />
+                <img
+                  src={form.thumbnail}
+                  alt="Preview"
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    const img = e.currentTarget;
+                    if (img.src.includes("maxresdefault")) {
+                      img.src = img.src.replace("maxresdefault", "hqdefault");
+                    }
+                  }}
+                />
                 <button
                   type="button"
                   onClick={() => setForm((p) => ({ ...p, thumbnail: "" }))}
@@ -200,7 +210,7 @@ function VideoFormModal({
                     type="button"
                     onClick={() => {
                       const id = extractYouTubeId(form.youtube_id);
-                      setForm((p) => ({ ...p, thumbnail: `https://img.youtube.com/vi/${id}/maxresdefault.jpg` }));
+                      setForm((p) => ({ ...p, thumbnail: `https://img.youtube.com/vi/${id}/hqdefault.jpg` }));
                     }}
                     className="text-xs text-accent hover:underline"
                   >

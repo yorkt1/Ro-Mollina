@@ -14,8 +14,27 @@ import { Button } from "@/components/ui/button";
 import { formatPropertyPrice, propertyTypeLabel, purposeLabel, whatsappLink } from "@/data/properties";
 import { useProperty, useProperties } from "@/hooks/use-properties";
 import SEO from "@/components/SEO";
+import { propertyPath } from "@/lib/property-links";
 
 /* ── helpers ─────────────────────────────────── */
+
+function extractPropertyId(id: string | undefined, legacySlug: string | undefined, allProperties: { id: string; shortId?: number }[]) {
+  if (!id) {
+    const match = (legacySlug ?? "").match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);
+    return match?.[1];
+  }
+
+  if (/^[0-9]+$/.test(id)) {
+    return allProperties.find((item) => String(item.shortId) === id)?.id ?? id;
+  }
+
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+    return id;
+  }
+
+  const match = (legacySlug ?? id).match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);
+  return match?.[1];
+}
 
 function InfoRow({ label, value }: { label: string; value?: string | number | boolean | null }) {
   if (value === undefined || value === null || value === "" || value === false) return null;
@@ -382,16 +401,17 @@ const LEISURE_ICONS: Record<string, React.ElementType> = {
 };
 
 export default function PropertyDetailPage() {
-  const { id } = useParams();
-  const { data: property, isLoading } = useProperty(id);
+  const { id, legacySlug } = useParams();
   const { data: allProperties = [] } = useProperties();
+  const propertyId = extractPropertyId(id, legacySlug, allProperties);
+  const { data: property, isLoading } = useProperty(propertyId);
   const [selectedImage, setSelectedImage] = useState(0);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
 
   const related = useMemo(
-    () => allProperties.filter((item) => item.id !== id && item.purpose === property?.purpose).slice(0, 3),
-    [id, property?.purpose, allProperties],
+    () => allProperties.filter((item) => item.id !== propertyId && item.purpose === property?.purpose).slice(0, 3),
+    [propertyId, property?.purpose, allProperties],
   );
 
   if (isLoading) {
@@ -442,12 +462,13 @@ export default function PropertyDetailPage() {
     `${property.neighborhood}, Florianópolis/SC. CRECI-SC 72089F.`;
 
   const siteUrl = (import.meta.env.VITE_SITE_URL as string | undefined) ?? "https://romolinaimoveis.com.br";
+  const propertyShortId = allProperties.find((item) => item.id === property.id)?.shortId;
 
   const propertyJsonLd = {
     "@type": "Apartment",
     name: property.title,
     description: property.description,
-    url: `${siteUrl}/imovel/${property.id}`,
+    url: `${siteUrl}${propertyPath(property, propertyShortId)}`,
     image: property.images,
     numberOfRooms: property.bedrooms,
     numberOfBathroomsTotal: property.bathrooms,
@@ -474,7 +495,7 @@ export default function PropertyDetailPage() {
       <SEO
         title={`${property.title} — ${property.neighborhood}`}
         description={seoDescription}
-        url={`/imovel/${property.id}`}
+        url={propertyPath(property, propertyShortId)}
         image={property.images[0]}
         jsonLd={propertyJsonLd}
       />

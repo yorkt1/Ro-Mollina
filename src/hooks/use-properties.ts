@@ -66,7 +66,10 @@ export function useProperties() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return (data as DbProperty[]).map(dbToProperty);
+      return (data as DbProperty[]).map((db, index) => ({
+        ...dbToProperty(db),
+        shortId: index + 1,
+      }));
     },
     staleTime: 1000 * 60 * 2,
   });
