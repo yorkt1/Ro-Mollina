@@ -10,7 +10,9 @@
 
 import { Helmet } from "react-helmet-async";
 
-const SITE_URL = (import.meta.env.VITE_SITE_URL as string | undefined) ?? "https://romolinaimoveis.com.br";
+import { resolveSeoImageUrl } from "@/lib/seo";
+
+const SITE_URL = (import.meta.env.VITE_SITE_URL as string | undefined) ?? "https://www.romolinaimoveis.com.br";
 const SITE_NAME = "Ro Molina Imóveis";
 const DEFAULT_DESCRIPTION =
   "Imóveis de alto padrão em Florianópolis. Apartamentos, casas e coberturas com atendimento exclusivo. CRECI-SC 72089F.";
@@ -45,6 +47,7 @@ export default function SEO({
     : `${SITE_NAME} — Imóveis de Alto Padrão em Florianópolis`;
 
   const canonical = url ? `${SITE_URL}${url}` : undefined;
+  const ogImage = resolveSeoImageUrl(image, SITE_URL);
 
   const schemas = jsonLd
     ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]).map((schema) => ({
@@ -64,7 +67,7 @@ export default function SEO({
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:type" content={type} />
-      <meta property="og:image" content={image} />
+      {ogImage && <meta property="og:image" content={ogImage} />}
       <meta property="og:site_name" content={SITE_NAME} />
       <meta property="og:locale" content="pt_BR" />
       {canonical && <meta property="og:url" content={canonical} />}
@@ -73,7 +76,7 @@ export default function SEO({
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={image} />
+      {ogImage && <meta name="twitter:image" content={ogImage} />}
 
       {/* JSON-LD */}
       {schemas && (
