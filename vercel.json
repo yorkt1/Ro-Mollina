@@ -1,5 +1,7 @@
 {
   "rewrites": [
+    { "source": "/imovel/:id", "destination": "/api/imovel?id=:id" },
+    { "source": "/imovel/:id/:rest*", "destination": "/api/imovel?id=:id" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
