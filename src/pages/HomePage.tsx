@@ -388,6 +388,32 @@ export default function HomePage() {
         </div>
       </RevealSection>
 
+      {/* ─── Property lead capture CTA ─── */}
+      <RevealSection className="bg-[hsl(var(--navy-deep))] py-20 text-white lg:py-24">
+        <div className="container px-6">
+          <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div className="space-y-4">
+              <p className="text-xs uppercase tracking-[0.28em] text-accent">
+                Negocie seu imóvel
+              </p>
+              <h2 className="max-w-3xl text-3xl leading-tight text-white md:text-4xl">
+                Quer vender ou alugar seu imóvel com estratégia?
+              </h2>
+              <p className="max-w-2xl text-base leading-relaxed text-white/70">
+                Envie seus dados e conte um pouco sobre o imóvel. Ro Molina entrará em
+                contato para entender seu objetivo e orientar os próximos passos.
+              </p>
+            </div>
+
+            <Button asChild variant="luxury" size="lg">
+              <Link to="/negocie-seu-imovel">
+                Solicitar contato <ArrowRight size={17} />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </RevealSection>
+
       <Footer />
     </div>
   );

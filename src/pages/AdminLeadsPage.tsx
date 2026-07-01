@@ -50,9 +50,9 @@ export default function AdminLeadsPage() {
               <thead className="bg-secondary/60 text-left text-xs uppercase tracking-[0.18em] text-muted-foreground">
                 <tr>
                   <th className="px-6 py-4">Lead</th>
+                  <th className="px-6 py-4">Contato</th>
                   <th className="px-6 py-4">Origem</th>
-                  <th className="px-6 py-4">Interesse</th>
-                  <th className="px-6 py-4">Budget</th>
+                  <th className="px-6 py-4">Mensagem / interesse</th>
                   <th className="px-6 py-4">Último contato</th>
                   <th className="px-6 py-4">Responsável</th>
                 </tr>
@@ -64,9 +64,24 @@ export default function AdminLeadsPage() {
                       <p className="font-medium text-foreground">{lead.name}</p>
                       <p className="mt-1 text-sm text-muted-foreground">{lead.neighborhood}</p>
                     </td>
-                    <td className="px-6 py-4 text-sm text-foreground">{lead.source}</td>
-                    <td className="px-6 py-4 text-sm text-foreground">{lead.interest}</td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">{lead.budget}</td>
+                    <td className="px-6 py-4 text-sm">
+                      <p className="text-foreground">{lead.phone || "Não informado"}</p>
+                      <p className="mt-1 text-muted-foreground">{lead.email || "Sem e-mail"}</p>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-foreground">
+                      <p>{lead.source}</p>
+                      {lead.marketingData?.utm_source && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {lead.marketingData.utm_source}
+                          {lead.marketingData.utm_campaign
+                            ? ` · ${lead.marketingData.utm_campaign}`
+                            : ""}
+                        </p>
+                      )}
+                    </td>
+                    <td className="max-w-xs whitespace-normal px-6 py-4 text-sm text-muted-foreground">
+                      {lead.message || `${lead.interest} · ${lead.budget}`}
+                    </td>
                     <td className="px-6 py-4 text-sm text-muted-foreground">{lead.lastContact}</td>
                     <td className="px-6 py-4 text-sm text-foreground">{lead.owner}</td>
                   </tr>

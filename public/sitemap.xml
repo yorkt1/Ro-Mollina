@@ -36,6 +36,13 @@
     <priority>0.7</priority>
   </url>
 
+  <!-- Captação de imóveis -->
+  <url>
+    <loc>https://romolinaimoveis.com.br/negocie-seu-imovel</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!--
     Páginas individuais de imóveis (/imovel/:id) são descobertas
     pelos crawlers através das listagens acima.

@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown, Home, Building2, Waves, TreePine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage, type Language } from "@/hooks/use-language";
-import { whatsappLink, propertyTypeLabel } from "@/data/properties";
+import { propertyTypeLabel } from "@/data/properties";
 import { usePropertyTypes } from "@/hooks/use-property-types";
 import { useDestinationLinks } from "@/hooks/use-destination-links";
 
@@ -284,14 +284,12 @@ export default function Header() {
           <div className="h-5 w-px bg-foreground/15" />
 
           <div className="flex items-center gap-4">
-            <a
-              href={whatsappLink("Olá! Gostaria de negociar meu imóvel com a Ro Molina.")}
-              target="_blank"
-              rel="noreferrer"
+            <Link
+              to="/negocie-seu-imovel"
               className="text-[13px] uppercase tracking-[0.18em] text-accent transition-colors hover:text-gold-light"
             >
               {t.listProperty}
-            </a>
+            </Link>
 
             {/* Language Selector */}
             <div ref={langRef} className="relative">
@@ -430,14 +428,13 @@ export default function Header() {
 
 
 
-            <a
-              href={whatsappLink("Olá! Gostaria de negociar meu imóvel com a Ro Molina.")}
-              target="_blank"
-              rel="noreferrer"
+            <Link
+              to="/negocie-seu-imovel"
               className="py-2.5 text-sm uppercase tracking-[0.2em] text-accent transition-colors hover:text-gold-light"
+              onClick={() => setOpen(false)}
             >
               {t.listProperty}
-            </a>
+            </Link>
 
             {/* Mobile lang */}
             <div className="flex gap-2 pt-3">

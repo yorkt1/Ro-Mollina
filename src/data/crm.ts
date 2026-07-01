@@ -11,6 +11,10 @@ export interface Lead {
   neighborhood: string;
   lastContact: string;
   owner: string;
+  phone?: string;
+  email?: string;
+  message?: string;
+  marketingData?: Record<string, string>;
 }
 
 export interface Client {

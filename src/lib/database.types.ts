@@ -32,4 +32,8 @@ export interface DbLead {
   neighborhood: string;
   last_contact: string;
   owner: string;
+  phone: string | null;
+  email: string | null;
+  message: string | null;
+  marketing_data: Record<string, string> | null;
 }

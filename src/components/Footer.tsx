@@ -22,6 +22,7 @@ export default function Footer() {
               <Link to="/comprar" className="text-white/75 transition-colors hover:text-accent">Comprar</Link>
               <Link to="/alugar" className="text-white/75 transition-colors hover:text-accent">Alugar</Link>
               <Link to="/imoveis" className="text-white/75 transition-colors hover:text-accent">Portfólio completo</Link>
+              <Link to="/negocie-seu-imovel" className="text-white/75 transition-colors hover:text-accent">Negocie seu imóvel</Link>
             </div>
           </div>
 

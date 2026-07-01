@@ -14,7 +14,38 @@ function dbToLead(db: DbLead): Lead {
     neighborhood: db.neighborhood,
     lastContact: db.last_contact,
     owner: db.owner,
+    phone: db.phone ?? undefined,
+    email: db.email ?? undefined,
+    message: db.message ?? undefined,
+    marketingData: db.marketing_data ?? undefined,
   };
+}
+
+export interface WebsiteLeadForm {
+  name: string;
+  phone: string;
+  email: string;
+  message: string;
+  website?: string;
+  marketingData?: Record<string, string>;
+}
+
+export function useSubmitWebsiteLead() {
+  return useMutation({
+    mutationFn: async (form: WebsiteLeadForm) => {
+      const { data, error } = await supabase.rpc("submit_website_lead", {
+        p_name: form.name,
+        p_phone: form.phone,
+        p_email: form.email,
+        p_message: form.message,
+        p_marketing_data: form.marketingData ?? {},
+        p_website: form.website ?? "",
+      });
+
+      if (error) throw error;
+      return data as string;
+    },
+  });
 }
 
 export function useLeads() {
@@ -68,7 +99,22 @@ export function useUpdateLeadStage() {
       const { error } = await supabase.from("leads").update({ stage }).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["leads"] }),
+    onMutate: async ({ id, stage }) => {
+      await qc.cancelQueries({ queryKey: ["leads"] });
+      const previousLeads = qc.getQueryData<Lead[]>(["leads"]);
+
+      qc.setQueryData<Lead[]>(["leads"], (current = []) =>
+        current.map((lead) => (lead.id === id ? { ...lead, stage } : lead)),
+      );
+
+      return { previousLeads };
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousLeads) {
+        qc.setQueryData(["leads"], context.previousLeads);
+      }
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["leads"] }),
   });
 }
 
