@@ -5,6 +5,7 @@ import { useDestinationLinks, useCreateDestinationLink, useDeleteDestinationLink
 import { propertyTypeLabel } from "@/data/properties";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { getSiteDestinationOptions } from "@/lib/site-destinations";
 
 export default function AdminSettingsPage() {
   const { data: types = [], isLoading } = usePropertyTypes();
@@ -17,6 +18,10 @@ export default function AdminSettingsPage() {
   const createDestMutation = useCreateDestinationLink();
   const deleteDestMutation = useDeleteDestinationLink();
   const [newDestPath, setNewDestPath] = useState("");
+  const destinationOptions = getSiteDestinationOptions(types.map((type) => type.name));
+  const availableDestinations = destinationOptions.filter(
+    (option) => !destLinks.some((link) => link.path === option.path),
+  );
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,19 +47,18 @@ export default function AdminSettingsPage() {
 
   const handleAddDest = async (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmedPath = newDestPath.trim();
-    if (!trimmedPath) {
-      toast({ title: "Informe o link!", variant: "destructive" });
+    const selectedDestination = destinationOptions.find(
+      (option) => option.path === newDestPath,
+    );
+    if (!selectedDestination) {
+      toast({ title: "Selecione um destino!", variant: "destructive" });
       return;
     }
-    // Auto-generate a name from path (e.g., /sobre-nos → Sobre Nos)
-    const autoName = trimmedPath
-      .replace(/^\//, "")
-      .split(/[-\/]/)
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(" ") || trimmedPath;
     try {
-      await createDestMutation.mutateAsync({ name: autoName, path: trimmedPath });
+      await createDestMutation.mutateAsync({
+        name: selectedDestination.label,
+        path: selectedDestination.path,
+      });
       setNewDestPath("");
       toast({ title: "Link adicionado!" });
     } catch {
@@ -143,18 +147,35 @@ export default function AdminSettingsPage() {
             </div>
             <div>
               <h2 className="text-xl text-foreground">Links Personalizados</h2>
-              <p className="text-sm text-muted-foreground">Páginas extras que aparecerão no menu e nos Destaques (ex: /sobre, /lançamentos).</p>
+              <p className="text-sm text-muted-foreground">Escolha páginas e filtros existentes para disponibilizar nos Destaques.</p>
             </div>
           </div>
 
           <form onSubmit={handleAddDest} className="flex gap-2">
-            <input
-              className="h-10 flex-1 rounded-sm border border-border bg-background px-3 text-sm outline-none transition-colors focus:border-accent font-mono"
-              placeholder="Link (ex: /sobre, /#contato)"
+            <select
+              className="h-10 min-w-0 flex-1 rounded-sm border border-border bg-background px-3 text-sm outline-none transition-colors focus:border-accent"
               value={newDestPath}
               onChange={(e) => setNewDestPath(e.target.value)}
-            />
-            <Button type="submit" variant="crm" disabled={createDestMutation.isPending}>
+            >
+              <option value="">Selecione uma página ou filtro...</option>
+              {(["Páginas do site", "Imóveis à venda", "Imóveis para locação"] as const).map(
+                (group) => {
+                  const options = availableDestinations.filter(
+                    (option) => option.group === group,
+                  );
+                  return options.length > 0 ? (
+                    <optgroup key={group} label={group}>
+                      {options.map((option) => (
+                        <option key={option.path} value={option.path}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ) : null;
+                },
+              )}
+            </select>
+            <Button type="submit" variant="crm" disabled={createDestMutation.isPending || !newDestPath}>
               {createDestMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
               <span className="ml-2 hidden sm:inline">Adicionar</span>
             </Button>
@@ -173,7 +194,10 @@ export default function AdminSettingsPage() {
               <div className="grid gap-2 sm:grid-cols-2">
                 {destLinks.map((d) => (
                   <div key={d.id} className="flex items-center justify-between rounded-sm border border-border bg-secondary/10 px-4 py-3 transition-colors hover:bg-secondary/20">
-                    <span className="font-mono text-sm text-foreground">{d.path}</span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">{d.name}</p>
+                      <p className="truncate font-mono text-xs text-muted-foreground">{d.path}</p>
+                    </div>
                     <button
                       onClick={() => handleDeleteDest(d.id, d.name)}
                       className="text-muted-foreground hover:text-red-500 transition-colors"

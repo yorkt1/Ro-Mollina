@@ -13,6 +13,7 @@ import { uploadImageToCloudinary } from "@/lib/cloudinary";
 import { usePropertyTypes } from "@/hooks/use-property-types";
 import { useDestinationLinks } from "@/hooks/use-destination-links";
 import { propertyTypeLabel } from "@/data/properties";
+import { getSiteDestinationOptions } from "@/lib/site-destinations";
 
 // ─── Custom Number Input ───────────────────────────────
 
@@ -83,11 +84,27 @@ function HighlightFormModal({
 
   const { data: propertyTypes = [] } = usePropertyTypes();
   const { data: destLinks = [] } = useDestinationLinks();
+  const systemDestinations = getSiteDestinationOptions(
+    propertyTypes.map((type) => type.name),
+  );
+  const customDestinations = [
+    ...systemDestinations,
+    ...destLinks
+      .filter((link) => !systemDestinations.some((option) => option.path === link.path))
+      .map((link) => ({
+        label: link.name,
+        path: link.path,
+        group: "Páginas do site" as const,
+      })),
+  ];
 
   // Mode: 'auto' (purpose+type) or 'custom' (manual path)
   const [mode, setMode] = useState<"auto" | "custom">(() => {
     const link = highlight?.link ?? "";
-    if (link && !link.includes("tipo=")) return "custom";
+    const isPropertyLink =
+      (link.startsWith("/comprar") || link.startsWith("/alugar")) &&
+      !link.includes("categoria=");
+    if (link && !isPropertyLink) return "custom";
     return "auto";
   });
 
@@ -96,9 +113,10 @@ function HighlightFormModal({
     const link = highlight?.link ?? "/comprar";
     const isRent = link.startsWith("/alugar");
     const typeMatch = link.match(/tipo=([^&]+)/);
+    const routeTypeMatch = link.match(/^\/(?:comprar|alugar)\/([^?]+)/);
     return {
       purpose: isRent ? "aluguel" : "venda",
-      type: typeMatch ? typeMatch[1] : ""
+      type: decodeURIComponent(typeMatch?.[1] ?? routeTypeMatch?.[1] ?? "")
     };
   };
 
@@ -269,18 +287,18 @@ function HighlightFormModal({
                   className={inputClass}
                   value={form.customLink}
                   onChange={(e) => {
-                    const selected = destLinks.find(d => d.path === e.target.value);
+                    const selected = customDestinations.find(d => d.path === e.target.value);
                     setForm((p) => ({ 
                       ...p, 
                       customLink: e.target.value,
-                      title: (!p.title && selected) ? selected.name : p.title
+                      title: (!p.title && selected) ? selected.label : p.title
                     }));
                   }}
                 >
-                  <option value="">Escolha um link das configurações...</option>
-                  {destLinks.map((d) => (
-                    <option key={d.id} value={d.path}>
-                      {d.name} ({d.path})
+                  <option value="">Selecione uma página ou filtro...</option>
+                  {customDestinations.map((d) => (
+                    <option key={d.path} value={d.path}>
+                      {d.label} ({d.path})
                     </option>
                   ))}
                 </select>
