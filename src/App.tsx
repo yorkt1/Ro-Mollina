@@ -4,6 +4,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import WhatsAppFloat from "@/components/WhatsAppFloat";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { LanguageProvider } from "@/hooks/use-language";
 import { AuthProvider } from "@/hooks/use-auth";
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="/imovel/:id/:slug?" element={<PropertyDetailPage />} />
             <Route path="*" element={<NotFound />} />
             </Routes>
+            <WhatsAppFloat />
           </BrowserRouter>
         </TooltipProvider>
       </LanguageProvider>
