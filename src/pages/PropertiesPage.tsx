@@ -14,6 +14,10 @@ import {
 } from "@/data/properties";
 import { useProperties } from "@/hooks/use-properties";
 import { usePropertyTypes } from "@/hooks/use-property-types";
+import {
+  propertyTypeMatchesCategory,
+  propertyTypeMatchesFilter,
+} from "@/lib/storefront-filters";
 
 export default function PropertiesPage({
   defaultPurpose = "todos",
@@ -34,6 +38,7 @@ export default function PropertiesPage({
   const initialMinPrice = searchParams.get("min") || "";
   const initialMaxPrice = searchParams.get("max") || "";
   const initialBedrooms = searchParams.get("quartos") || "todos";
+  const category = searchParams.get("categoria") || "todos";
 
   const [search, setSearch] = useState("");
   const [purpose, setPurpose] = useState<PropertyPurpose | "todos">(defaultPurpose);
@@ -106,6 +111,7 @@ export default function PropertiesPage({
   };
 
   const hasActiveFilters =
+    category !== "todos" ||
     type !== "todos" ||
     location !== "todos" ||
     minPrice !== "" ||
@@ -120,7 +126,8 @@ export default function PropertiesPage({
 
     return properties.filter((property) => {
       const matchesPurpose = purpose === "todos" || property.purpose === purpose;
-      const matchesType = type === "todos" || property.type === type;
+      const matchesType = propertyTypeMatchesFilter(property.type, type);
+      const matchesCategory = propertyTypeMatchesCategory(property.type, category);
       const matchesLocation = location === "todos" || property.neighborhood === location;
       const matchesMinPrice = property.price >= minP;
       const matchesMaxPrice = property.price <= maxP || property.price === 0;
@@ -128,18 +135,22 @@ export default function PropertiesPage({
       const haystack = `${property.title} ${property.neighborhood} ${property.location}`.toLowerCase();
       const matchesSearch = !search || haystack.includes(search.toLowerCase());
 
-      return matchesPurpose && matchesType && matchesLocation && matchesMinPrice && matchesMaxPrice && matchesBedrooms && matchesSearch;
+      return matchesPurpose && matchesType && matchesCategory && matchesLocation && matchesMinPrice && matchesMaxPrice && matchesBedrooms && matchesSearch;
     });
-  }, [location, purpose, search, type, minPrice, maxPrice, bedrooms, properties]);
+  }, [location, purpose, search, type, category, minPrice, maxPrice, bedrooms, properties]);
 
   // Dynamic title based on active type filter
   const purposeWord = defaultPurpose === "venda" ? "à Venda" : defaultPurpose === "aluguel" ? "para Alugar" : "";
-  const dynamicTitle = type !== "todos"
-    ? `${propertyTypeLabel(type)} ${purposeWord}`.trim()
-    : pageTitle;
-  const dynamicSubtitle = type !== "todos"
-    ? `Veja todos os imóveis do tipo ${propertyTypeLabel(type).toLowerCase()} disponíveis.`
-    : pageSubtitle;
+  const dynamicTitle = category === "condominio" && type === "todos"
+    ? `Condomínios ${purposeWord}`.trim()
+    : type !== "todos"
+      ? `${propertyTypeLabel(type)} ${purposeWord}`.trim()
+      : pageTitle;
+  const dynamicSubtitle = category === "condominio" && type === "todos"
+    ? "Veja os imóveis disponíveis em condomínios."
+    : type !== "todos"
+      ? `Veja todos os imóveis do tipo ${propertyTypeLabel(type).toLowerCase()} disponíveis.`
+      : pageSubtitle;
 
   const seoTitle =
     defaultPurpose === "venda"

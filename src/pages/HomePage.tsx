@@ -19,6 +19,7 @@ import { useProperties } from "@/hooks/use-properties";
 import { useLifestyleHighlights } from "@/hooks/use-highlights";
 import { useYouTubeVideos } from "@/hooks/use-youtube-videos";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
+import { getHighlightStorefrontLink } from "@/lib/storefront-filters";
 import SEO from "@/components/SEO";
 
 function RevealSection({ children, className = "", id }: { children: ReactNode; className?: string; id?: string }) {
@@ -120,7 +121,12 @@ export default function HomePage() {
 
   // Use Supabase data if available (no error + has items), otherwise fallback to hardcoded
   const displayHighlights = (!highlightsError && highlights.length > 0)
-    ? highlights.map((h) => ({ image: h.image, title: h.title, description: h.description, link: h.link }))
+    ? highlights.map((h) => ({
+        image: h.image,
+        title: h.title,
+        description: h.description,
+        link: getHighlightStorefrontLink(h.title, h.link),
+      }))
     : fallbackHighlights;
 
   const displayVideos = (!youtubeError && youtubeVideos.length > 0)
