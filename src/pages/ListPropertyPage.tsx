@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { useSubmitWebsiteLead } from "@/hooks/use-leads";
+import { trackLeadFormSuccess } from "@/lib/analytics";
 
 const TRACKING_PARAMETERS = [
   "utm_source",
@@ -37,6 +38,7 @@ export default function ListPropertyPage() {
     phone: "",
     email: "",
     message: "",
+    interest: "venda" as "venda" | "aluguel",
     website: "",
     consent: false,
   });
@@ -59,6 +61,7 @@ export default function ListPropertyPage() {
         phone: form.phone,
         email: form.email,
         message: form.message,
+        interest: form.interest,
         website: form.website,
         marketingData: {
           ...campaignData,
@@ -70,6 +73,7 @@ export default function ListPropertyPage() {
         },
       });
 
+      trackLeadFormSuccess();
       setSubmitted(true);
     } catch {
       // The mutation exposes its error state in the form below.
@@ -141,7 +145,12 @@ export default function ListPropertyPage() {
                     </p>
                   </div>
 
-                  <form onSubmit={handleSubmit} className="space-y-5">
+                  <form
+                    id="property-listing-form"
+                    data-gtm-form="property_listing_form"
+                    onSubmit={handleSubmit}
+                    className="space-y-5"
+                  >
                     <div className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
                       <label htmlFor="website">Não preencha este campo</label>
                       <input
@@ -220,6 +229,27 @@ export default function ListPropertyPage() {
                           placeholder="voce@email.com"
                         />
                       </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="lead-interest" className="mb-1.5 block text-sm font-medium">
+                        O que você deseja fazer?
+                      </label>
+                      <select
+                        id="lead-interest"
+                        required
+                        value={form.interest}
+                        onChange={(event) =>
+                          setForm((current) => ({
+                            ...current,
+                            interest: event.target.value as "venda" | "aluguel",
+                          }))
+                        }
+                        className="h-12 w-full rounded-sm border border-border bg-background px-4 text-sm outline-none transition-colors focus:border-accent focus:ring-1 focus:ring-accent"
+                      >
+                        <option value="venda">Quero vender meu imóvel</option>
+                        <option value="aluguel">Quero alugar meu imóvel</option>
+                      </select>
                     </div>
 
                     <div>

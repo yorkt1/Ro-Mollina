@@ -24,6 +24,7 @@ export interface DbProperty {
 export interface DbLead {
   id: string;
   created_at: string;
+  updated_at?: string;
   name: string;
   stage: "novo" | "qualificado" | "visita" | "proposta" | "fechamento";
   source: "WhatsApp" | "Instagram" | "Site" | "Indicação";

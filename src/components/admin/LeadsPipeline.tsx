@@ -1,6 +1,7 @@
 import { useRef, useState, type DragEvent, type ReactNode } from "react";
 import {
   CalendarClock,
+  Edit3,
   ExternalLink,
   GripVertical,
   Loader2,
@@ -12,10 +13,11 @@ import {
   UserRound,
   type LucideIcon,
 } from "lucide-react";
-import { leadStages, type Lead, type LeadStage } from "@/data/crm";
+import { leadStages, type Lead, type LeadStage } from "@/domain/leads";
 import { useDeleteLead, useLeads, useUpdateLeadStage } from "@/hooks/use-leads";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import LeadFormDialog from "@/components/admin/LeadFormDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,6 +63,7 @@ export default function LeadsPipeline() {
   const deleteLead = useDeleteLead();
   const { toast } = useToast();
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+  const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [draggingLeadId, setDraggingLeadId] = useState<string | null>(null);
   const [targetStage, setTargetStage] = useState<LeadStage | null>(null);
   const [expandedStages, setExpandedStages] = useState<Set<LeadStage>>(new Set());
@@ -361,7 +364,18 @@ export default function LeadsPipeline() {
                 </div>
               )}
 
-              <div className="flex justify-end border-t border-border pt-5">
+              <div className="flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-between">
+                <Button
+                  type="button"
+                  variant="crmSecondary"
+                  onClick={() => {
+                    setEditingLead(selectedLead);
+                    setSelectedLeadId(null);
+                  }}
+                >
+                  <Edit3 size={16} />
+                  Editar dados
+                </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button type="button" variant="destructive">
@@ -393,6 +407,14 @@ export default function LeadsPipeline() {
           </DialogContent>
         )}
       </Dialog>
+
+      <LeadFormDialog
+        open={editingLead !== null}
+        lead={editingLead}
+        onOpenChange={(open) => {
+          if (!open) setEditingLead(null);
+        }}
+      />
     </>
   );
 }

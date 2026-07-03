@@ -1,10 +1,19 @@
-import { Loader2 } from "lucide-react";
+import { useState } from "react";
+import { CheckCircle2, Inbox, Loader2, Plus, TrendingUp, Users } from "lucide-react";
 import LeadsPipeline from "@/components/admin/LeadsPipeline";
+import LeadFormDialog from "@/components/admin/LeadFormDialog";
+import CrmStatCard from "@/components/admin/CrmStatCard";
 import { Button } from "@/components/ui/button";
 import { useLeads } from "@/hooks/use-leads";
 
 export default function AdminLeadsPage() {
   const { data: leads = [], isLoading, error } = useLeads();
+  const [createOpen, setCreateOpen] = useState(false);
+  const newLeads = leads.filter((lead) => lead.stage === "novo").length;
+  const activeLeads = leads.filter((lead) =>
+    ["qualificado", "visita", "proposta"].includes(lead.stage),
+  ).length;
+  const closedLeads = leads.filter((lead) => lead.stage === "fechamento").length;
 
   if (error) {
     return (
@@ -28,7 +37,37 @@ export default function AdminLeadsPage() {
             Gerencie leads vindos do site, WhatsApp, Instagram e indicação em um único fluxo comercial.
           </p>
         </div>
-        <Button variant="crm">Novo lead</Button>
+        <Button variant="crm" onClick={() => setCreateOpen(true)}>
+          <Plus size={16} />
+          Novo lead
+        </Button>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <CrmStatCard
+          icon={Users}
+          label="Total de leads"
+          value={`${leads.length}`}
+          helper="Contatos reais cadastrados"
+        />
+        <CrmStatCard
+          icon={Inbox}
+          label="Novos"
+          value={`${newLeads}`}
+          helper="Aguardando primeiro atendimento"
+        />
+        <CrmStatCard
+          icon={TrendingUp}
+          label="Em andamento"
+          value={`${activeLeads}`}
+          helper="Qualificados, visitas e propostas"
+        />
+        <CrmStatCard
+          icon={CheckCircle2}
+          label="Fechamento"
+          value={`${closedLeads}`}
+          helper="Leads na etapa final"
+        />
       </div>
 
       <section className="rounded-sm border border-border bg-card p-6">
@@ -98,6 +137,8 @@ export default function AdminLeadsPage() {
           </div>
         )}
       </section>
+
+      <LeadFormDialog open={createOpen} onOpenChange={setCreateOpen} />
     </div>
   );
 }

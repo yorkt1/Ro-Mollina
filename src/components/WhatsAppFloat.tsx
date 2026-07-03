@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { useLocation } from "react-router-dom";
 import { whatsappLink } from "@/data/properties";
+import { trackWhatsAppClick } from "@/lib/analytics";
 
 const WHATSAPP_URL = whatsappLink(
   "Olá! Vim pelo site e gostaria de mais informações sobre os imóveis.",
@@ -190,6 +191,8 @@ export default function WhatsAppFloat() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Falar com Ro Molina pelo WhatsApp"
+          data-gtm-link="whatsapp_float"
+          onClick={() => trackWhatsAppClick("floating_button")}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
           className={`wa-float-button flex shrink-0 items-center justify-center rounded-full bg-[#25D366] transition-transform duration-200 ${
