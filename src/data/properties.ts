@@ -23,6 +23,7 @@ export interface Property {
   area: number;
   parkingSpots: number;
   featured: boolean;
+  opportunity?: boolean;
   exclusive: boolean;
   tag?: string;
   images: string[];

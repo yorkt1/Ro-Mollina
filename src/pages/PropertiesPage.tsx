@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useSearchParams, useParams } from "react-router-dom";
 import SEO from "@/components/SEO";
-import { Loader2, Search, X } from "lucide-react";
+import { BadgePercent, Loader2, Search, Star, X } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PropertyCard from "@/components/PropertyCard";
@@ -15,8 +15,10 @@ import {
 import { useProperties } from "@/hooks/use-properties";
 import { usePropertyTypes } from "@/hooks/use-property-types";
 import {
+  propertyMatchesShowcase,
   propertyTypeMatchesCategory,
   propertyTypeMatchesFilter,
+  type PropertyShowcase,
 } from "@/lib/storefront-filters";
 
 export default function PropertiesPage({
@@ -39,6 +41,11 @@ export default function PropertiesPage({
   const initialMaxPrice = searchParams.get("max") || "";
   const initialBedrooms = searchParams.get("quartos") || "todos";
   const category = searchParams.get("categoria") || "todos";
+  const requestedShowcase = searchParams.get("vitrine") || "todos";
+  const showcase: PropertyShowcase =
+    requestedShowcase === "destaques" || requestedShowcase === "oportunidades"
+      ? requestedShowcase
+      : "todos";
 
   const [search, setSearch] = useState("");
   const [purpose, setPurpose] = useState<PropertyPurpose | "todos">(defaultPurpose);
@@ -112,6 +119,7 @@ export default function PropertiesPage({
 
   const hasActiveFilters =
     category !== "todos" ||
+    showcase !== "todos" ||
     type !== "todos" ||
     location !== "todos" ||
     minPrice !== "" ||
@@ -128,6 +136,7 @@ export default function PropertiesPage({
       const matchesPurpose = purpose === "todos" || property.purpose === purpose;
       const matchesType = propertyTypeMatchesFilter(property.type, type);
       const matchesCategory = propertyTypeMatchesCategory(property.type, category);
+      const matchesShowcase = propertyMatchesShowcase(property, showcase);
       const matchesLocation = location === "todos" || property.neighborhood === location;
       const matchesMinPrice = property.price >= minP;
       const matchesMaxPrice = property.price <= maxP || property.price === 0;
@@ -135,39 +144,59 @@ export default function PropertiesPage({
       const haystack = `${property.title} ${property.neighborhood} ${property.location}`.toLowerCase();
       const matchesSearch = !search || haystack.includes(search.toLowerCase());
 
-      return matchesPurpose && matchesType && matchesCategory && matchesLocation && matchesMinPrice && matchesMaxPrice && matchesBedrooms && matchesSearch;
+      return matchesPurpose && matchesType && matchesCategory && matchesShowcase && matchesLocation && matchesMinPrice && matchesMaxPrice && matchesBedrooms && matchesSearch;
     });
-  }, [location, purpose, search, type, category, minPrice, maxPrice, bedrooms, properties]);
+  }, [location, purpose, search, type, category, showcase, minPrice, maxPrice, bedrooms, properties]);
 
   // Dynamic title based on active type filter
   const purposeWord = defaultPurpose === "venda" ? "à Venda" : defaultPurpose === "aluguel" ? "para Alugar" : "";
-  const dynamicTitle = category === "condominio" && type === "todos"
-    ? `Condomínios ${purposeWord}`.trim()
-    : type !== "todos"
-      ? `${propertyTypeLabel(type)} ${purposeWord}`.trim()
-      : pageTitle;
-  const dynamicSubtitle = category === "condominio" && type === "todos"
-    ? "Veja os imóveis disponíveis em condomínios."
-    : type !== "todos"
-      ? `Veja todos os imóveis do tipo ${propertyTypeLabel(type).toLowerCase()} disponíveis.`
-      : pageSubtitle;
+  const dynamicTitle = showcase === "oportunidades"
+    ? `Oportunidades ${purposeWord}`.trim()
+    : showcase === "destaques"
+      ? `Imóveis em destaque ${purposeWord}`.trim()
+      : category === "condominio" && type === "todos"
+        ? `Condomínios ${purposeWord}`.trim()
+        : type !== "todos"
+          ? `${propertyTypeLabel(type)} ${purposeWord}`.trim()
+          : pageTitle;
+  const dynamicSubtitle = showcase === "oportunidades"
+    ? "Uma seleção especial de imóveis com condições e potencial diferenciados."
+    : showcase === "destaques"
+      ? "Imóveis escolhidos para ganhar maior visibilidade em nossa curadoria."
+      : category === "condominio" && type === "todos"
+        ? "Veja os imóveis disponíveis em condomínios."
+        : type !== "todos"
+          ? `Veja todos os imóveis do tipo ${propertyTypeLabel(type).toLowerCase()} disponíveis.`
+          : pageSubtitle;
 
   const seoTitle =
-    defaultPurpose === "venda"
-      ? "Imóveis à Venda em Florianópolis"
-      : defaultPurpose === "aluguel"
-        ? "Imóveis para Alugar em Florianópolis"
-        : "Portfólio de Imóveis em Florianópolis";
+    showcase === "oportunidades"
+      ? `Oportunidades de Imóveis ${purposeWord}`.trim()
+      : showcase === "destaques"
+        ? `Imóveis em Destaque ${purposeWord}`.trim()
+        : defaultPurpose === "venda"
+          ? "Imóveis à Venda em Florianópolis"
+          : defaultPurpose === "aluguel"
+            ? "Imóveis para Alugar em Florianópolis"
+            : "Portfólio de Imóveis em Florianópolis";
 
   const seoDescription =
-    defaultPurpose === "venda"
-      ? "Apartamentos, casas e coberturas à venda em Florianópolis. Curadoria exclusiva por Ro Molina. CRECI-SC 72089F."
-      : defaultPurpose === "aluguel"
-        ? "Apartamentos e coberturas para locação em Florianópolis com atendimento personalizado por Ro Molina. CRECI-SC 72089F."
-        : "Portfólio completo de imóveis para compra e aluguel em Florianópolis, curado por Ro Molina. CRECI-SC 72089F.";
+    showcase === "oportunidades"
+      ? "Confira oportunidades imobiliárias selecionadas por Ro Molina em Florianópolis e região."
+      : showcase === "destaques"
+        ? "Confira os imóveis em destaque selecionados por Ro Molina em Florianópolis e região."
+        : defaultPurpose === "venda"
+          ? "Apartamentos, casas e coberturas à venda em Florianópolis. Curadoria exclusiva por Ro Molina. CRECI-SC 72089F."
+          : defaultPurpose === "aluguel"
+            ? "Apartamentos e coberturas para locação em Florianópolis com atendimento personalizado por Ro Molina. CRECI-SC 72089F."
+            : "Portfólio completo de imóveis para compra e aluguel em Florianópolis, curado por Ro Molina. CRECI-SC 72089F.";
 
-  const seoUrl =
+  const baseSeoUrl =
     defaultPurpose === "venda" ? "/comprar" : defaultPurpose === "aluguel" ? "/alugar" : "/imoveis";
+  const seoUrl =
+    showcase === "todos"
+      ? baseSeoUrl
+      : `${baseSeoUrl}?vitrine=${showcase}`;
 
   return (
     <div className="min-h-screen bg-background">
@@ -214,6 +243,34 @@ export default function PropertiesPage({
                   {option.label}
                 </Button>
               ))}
+              <Button
+                type="button"
+                variant={showcase === "destaques" ? "crm" : "crmSecondary"}
+                size="sm"
+                onClick={() =>
+                  updateParams(
+                    "vitrine",
+                    showcase === "destaques" ? "todos" : "destaques",
+                  )
+                }
+              >
+                <Star size={14} />
+                Destaques
+              </Button>
+              <Button
+                type="button"
+                variant={showcase === "oportunidades" ? "crm" : "crmSecondary"}
+                size="sm"
+                onClick={() =>
+                  updateParams(
+                    "vitrine",
+                    showcase === "oportunidades" ? "todos" : "oportunidades",
+                  )
+                }
+              >
+                <BadgePercent size={14} />
+                Oportunidades
+              </Button>
             </div>
           </div>
 

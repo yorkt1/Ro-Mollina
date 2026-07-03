@@ -6,6 +6,21 @@ function normalizeFilterValue(value: string) {
     .toLowerCase();
 }
 
+export type PropertyShowcase = "todos" | "destaques" | "oportunidades";
+
+export function propertyMatchesShowcase(
+  property: { featured: boolean; opportunity?: boolean },
+  showcase: string,
+) {
+  const normalizedShowcase = normalizeFilterValue(showcase);
+
+  if (!normalizedShowcase || normalizedShowcase === "todos") return true;
+  if (normalizedShowcase === "destaques") return property.featured;
+  if (normalizedShowcase === "oportunidades") return property.opportunity === true;
+
+  return true;
+}
+
 export function propertyTypeMatchesFilter(propertyType: string, selectedType: string) {
   const type = normalizeFilterValue(propertyType);
   const filter = normalizeFilterValue(selectedType);
@@ -36,7 +51,10 @@ export function propertyTypeMatchesCategory(propertyType: string, category: stri
 export function getHighlightStorefrontLink(title: string, configuredLink: string) {
   const normalizedTitle = normalizeFilterValue(title);
 
-  if (normalizedTitle === "condominio" || normalizedTitle === "condominios") {
+  if (
+    (normalizedTitle === "condominio" || normalizedTitle === "condominios") &&
+    !configuredLink.includes("vitrine=")
+  ) {
     const route = configuredLink.startsWith("/alugar") ? "/alugar" : "/comprar";
     return `${route}?categoria=condominio`;
   }

@@ -103,7 +103,8 @@ function HighlightFormModal({
     const link = highlight?.link ?? "";
     const isPropertyLink =
       (link.startsWith("/comprar") || link.startsWith("/alugar")) &&
-      !link.includes("categoria=");
+      !link.includes("categoria=") &&
+      !link.includes("vitrine=");
     if (link && !isPropertyLink) return "custom";
     return "auto";
   });

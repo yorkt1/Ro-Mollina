@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Bath, BedDouble, Car, MapPin, Maximize, Tag } from "lucide-react";
+import { BadgePercent, Bath, BedDouble, Car, MapPin, Maximize, Tag } from "lucide-react";
 import { Property, formatPropertyPrice, propertyTypeLabel, purposeLabel } from "@/data/properties";
 import { cloudinaryUrl } from "@/lib/cloudinary";
 import { propertyPath } from "@/lib/property-links";
@@ -25,6 +25,11 @@ export default function PropertyCard({ property }: { property: Property }) {
           <span className="rounded-sm bg-primary/78 px-3 py-1.5 text-xs font-medium uppercase tracking-[0.18em] text-white backdrop-blur-sm">
             {propertyTypeLabel(property.type)}
           </span>
+          {property.opportunity && (
+            <span className="inline-flex items-center gap-1 rounded-sm bg-emerald-600 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white shadow-md">
+              <BadgePercent size={13} /> Oportunidade
+            </span>
+          )}
         </div>
 
         {property.tag && (

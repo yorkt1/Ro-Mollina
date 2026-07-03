@@ -1,9 +1,9 @@
 import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
-import { Loader2, MapPin, PencilLine, Plus, Minus, Star, Trash2, X, ImagePlus, ArrowLeft, ArrowRight, GripVertical, Upload, Search } from "lucide-react";
+import { BadgePercent, Loader2, MapPin, PencilLine, Plus, Minus, Star, Trash2, X, ImagePlus, ArrowLeft, ArrowRight, GripVertical, Upload, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPropertyPrice, propertyTypeLabel, purposeLabel, type Property, type PropertyType, type PropertyPurpose } from "@/data/properties";
-import { useProperties, useCreateProperty, useUpdateProperty, useDeleteProperty, uploadPropertyImage, type PropertyFormData } from "@/hooks/use-properties";
+import { useProperties, useCreateProperty, useUpdateProperty, useDeleteProperty, useUpdatePropertyShowcase, uploadPropertyImage, type PropertyFormData } from "@/hooks/use-properties";
 import { useToast } from "@/hooks/use-toast";
 import { usePropertyTypes } from "@/hooks/use-property-types";
 
@@ -126,6 +126,7 @@ function PropertyFormModal({
     area: property?.area ?? 0,
     parkingSpots: property?.parkingSpots ?? 0,
     featured: property?.featured ?? false,
+    opportunity: property?.opportunity ?? false,
     exclusive: property?.exclusive ?? false,
     tag: property?.tag ?? "",
     images: property?.images ?? [],
@@ -581,6 +582,7 @@ function PropertyFormModal({
             </div>
             <div className="mt-3 flex flex-wrap gap-5">
               <label className="inline-flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" checked={form.featured} onChange={(e) => setForm((p) => ({ ...p, featured: e.target.checked }))} className="accent-accent" />Destaque</label>
+              <label className="inline-flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" checked={form.opportunity} onChange={(e) => setForm((p) => ({ ...p, opportunity: e.target.checked }))} className="accent-accent" />Oportunidade</label>
               <label className="inline-flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" checked={form.exclusive} onChange={(e) => setForm((p) => ({ ...p, exclusive: e.target.checked }))} className="accent-accent" />Exclusividade</label>
               <label className="inline-flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" checked={form.furnished} onChange={(e) => setForm((p) => ({ ...p, furnished: e.target.checked }))} className="accent-accent" />Mobiliado</label>
               <label className="inline-flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" checked={form.swap} onChange={(e) => setForm((p) => ({ ...p, swap: e.target.checked }))} className="accent-accent" />Aceita Permuta</label>
@@ -846,6 +848,7 @@ function PropertyFormModal({
 export default function AdminPropertiesPage() {
   const { data: properties = [], isLoading, error } = useProperties();
   const deleteMutation = useDeleteProperty();
+  const showcaseMutation = useUpdatePropertyShowcase();
   const { toast } = useToast();
   const [modal, setModal] = useState<{ open: boolean; property?: Property }>({ open: false });
 
@@ -857,6 +860,27 @@ export default function AdminPropertiesPage() {
       toast({ title: "Imóvel excluído", description: title });
     } catch {
       toast({ title: "Erro ao excluir", variant: "destructive" });
+    }
+  };
+
+  const handleShowcaseToggle = async (
+    property: Property,
+    field: "featured" | "opportunity",
+  ) => {
+    const value = !property[field];
+    try {
+      await showcaseMutation.mutateAsync({ id: property.id, field, value });
+      toast({
+        title: value ? "Imóvel adicionado à vitrine" : "Imóvel removido da vitrine",
+        description: `${property.title} · ${
+          field === "featured" ? "Destaques" : "Oportunidades"
+        }`,
+      });
+    } catch {
+      toast({
+        title: "Não foi possível atualizar a vitrine",
+        variant: "destructive",
+      });
     }
   };
 
@@ -887,11 +911,12 @@ export default function AdminPropertiesPage() {
         </Button>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         {[
           { label: "Imóveis", value: `${properties.filter((p) => p.purpose === "venda").length}` },
           { label: "Aluguéis", value: `${properties.filter((p) => p.purpose === "aluguel").length}` },
           { label: "Destaques", value: `${properties.filter((p) => p.featured).length}` },
+          { label: "Oportunidades", value: `${properties.filter((p) => p.opportunity).length}` },
         ].map((item) => (
           <div key={item.label} className="rounded-sm border border-border bg-card p-6">
             <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">{item.label}</p>
@@ -915,6 +940,7 @@ export default function AdminPropertiesPage() {
                   <th className="px-6 py-4">Tipo</th>
                   <th className="px-6 py-4">Bairro</th>
                   <th className="px-6 py-4">Preço</th>
+                  <th className="px-6 py-4">Vitrines</th>
                   <th className="px-6 py-4">Ações</th>
                 </tr>
               </thead>
@@ -941,6 +967,36 @@ export default function AdminPropertiesPage() {
                     <td className="px-6 py-4 text-sm text-muted-foreground">{property.neighborhood}</td>
                     <td className="px-6 py-4 font-medium text-navy">{formatPropertyPrice(property)}</td>
                     <td className="px-6 py-4">
+                      <div className="flex min-w-40 flex-wrap gap-2">
+                        <button
+                          type="button"
+                          disabled={showcaseMutation.isPending}
+                          onClick={() => void handleShowcaseToggle(property, "featured")}
+                          className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                            property.featured
+                              ? "border-accent bg-accent/15 text-foreground"
+                              : "border-border text-muted-foreground hover:border-accent/50"
+                          }`}
+                        >
+                          <Star size={12} fill={property.featured ? "currentColor" : "none"} />
+                          Destaque
+                        </button>
+                        <button
+                          type="button"
+                          disabled={showcaseMutation.isPending}
+                          onClick={() => void handleShowcaseToggle(property, "opportunity")}
+                          className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                            property.opportunity
+                              ? "border-emerald-500/50 bg-emerald-50 text-emerald-700"
+                              : "border-border text-muted-foreground hover:border-emerald-500/50"
+                          }`}
+                        >
+                          <BadgePercent size={12} />
+                          Oportunidade
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
                       <div className="flex gap-2">
                         <Button
                           variant="crmSecondary"
@@ -963,7 +1019,7 @@ export default function AdminPropertiesPage() {
                 ))}
                 {properties.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-6 py-16 text-center text-muted-foreground">
+                    <td colSpan={7} className="px-6 py-16 text-center text-muted-foreground">
                       Nenhum imóvel cadastrado. Clique em &quot;Novo imóvel&quot; para começar.
                     </td>
                   </tr>

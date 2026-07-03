@@ -115,8 +115,13 @@ export default function HomePage() {
   const { data: highlights = [], error: highlightsError } = useLifestyleHighlights();
   const { data: youtubeVideos = [], error: youtubeError } = useYouTubeVideos();
 
-  const saleProperties = properties.filter((p) => p.purpose === "venda" && !p.exclusive);
-  const rentProperties = properties.filter((p) => p.purpose === "aluguel");
+  const opportunities = properties.filter((p) => p.opportunity);
+  const saleProperties = properties.filter(
+    (p) => p.purpose === "venda" && p.featured && !p.exclusive,
+  );
+  const rentProperties = properties.filter(
+    (p) => p.purpose === "aluguel" && p.featured,
+  );
   const exclusives = properties.filter((p) => p.exclusive);
 
   // Use Supabase data if available (no error + has items), otherwise fallback to hardcoded
@@ -213,7 +218,30 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* ─── Sale Highlights ─── */}
+      {/* Vitrine de oportunidades */}
+      {!isLoading && opportunities.length > 0 && (
+        <RevealSection className="bg-[hsl(var(--navy-deep))] py-20 lg:py-28">
+          <div className="container space-y-10 px-6">
+            <SectionHeading
+              eyebrow="Oportunidades"
+              title="Imóveis com condições e potencial diferenciados."
+              description="Uma vitrine atualizada diretamente pelo painel, reunindo oportunidades de venda e locação sem depender de categoria."
+              isDark={true}
+              action={
+                <Button asChild variant="luxury">
+                  <Link to="/imoveis?vitrine=oportunidades">
+                    Ver oportunidades <ArrowRight size={14} />
+                  </Link>
+                </Button>
+              }
+            />
+
+            <PaginatedGrid items={opportunities} sectionKey="opportunities" />
+          </div>
+        </RevealSection>
+      )}
+
+      {/* Imóveis em destaque para venda */}
       {!isLoading && saleProperties.length > 0 && (
         <RevealSection className="py-20 lg:py-28 bg-secondary/45">
           <div className="container space-y-10 px-6">
@@ -223,7 +251,7 @@ export default function HomePage() {
               description="Imóveis selecionados com foco em moradia, patrimônio e oportunidades reais de valorização."
               action={
                 <Button asChild variant="crmSecondary">
-                  <Link to="/comprar">
+                  <Link to="/comprar?vitrine=destaques">
                     Ver todos <ArrowRight size={14} />
                   </Link>
                 </Button>
@@ -245,7 +273,7 @@ export default function HomePage() {
               description="Atendimento próximo e locações selecionadas para quem busca praticidade, segurança e boa experiência."
               action={
                 <Button asChild variant="crmSecondary">
-                  <Link to="/alugar">
+                  <Link to="/alugar?vitrine=destaques">
                     Explorar aluguéis <ArrowRight size={14} />
                   </Link>
                 </Button>

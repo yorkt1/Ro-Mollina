@@ -3,7 +3,11 @@ import { propertyTypeLabel } from "@/data/properties";
 export interface SiteDestinationOption {
   label: string;
   path: string;
-  group: "Páginas do site" | "Imóveis à venda" | "Imóveis para locação";
+  group:
+    | "Páginas do site"
+    | "Vitrines personalizadas"
+    | "Imóveis à venda"
+    | "Imóveis para locação";
 }
 
 export function getSiteDestinationOptions(propertyTypes: string[]): SiteDestinationOption[] {
@@ -17,6 +21,36 @@ export function getSiteDestinationOptions(propertyTypes: string[]): SiteDestinat
     { label: "Sobre", path: "/sobre", group: "Páginas do site" },
     { label: "Negocie seu imóvel", path: "/negocie-seu-imovel", group: "Páginas do site" },
     { label: "Contato", path: "/#contato", group: "Páginas do site" },
+    {
+      label: "Todos os destaques",
+      path: "/imoveis?vitrine=destaques",
+      group: "Vitrines personalizadas",
+    },
+    {
+      label: "Todas as oportunidades",
+      path: "/imoveis?vitrine=oportunidades",
+      group: "Vitrines personalizadas",
+    },
+    {
+      label: "Destaques à venda",
+      path: "/comprar?vitrine=destaques",
+      group: "Vitrines personalizadas",
+    },
+    {
+      label: "Oportunidades à venda",
+      path: "/comprar?vitrine=oportunidades",
+      group: "Vitrines personalizadas",
+    },
+    {
+      label: "Destaques para locação",
+      path: "/alugar?vitrine=destaques",
+      group: "Vitrines personalizadas",
+    },
+    {
+      label: "Oportunidades para locação",
+      path: "/alugar?vitrine=oportunidades",
+      group: "Vitrines personalizadas",
+    },
     { label: "Todos à venda", path: "/comprar", group: "Imóveis à venda" },
     {
       label: "Condomínios à venda",

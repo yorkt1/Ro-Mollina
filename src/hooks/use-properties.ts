@@ -10,7 +10,7 @@ function dbToProperty(db: DbProperty): Property {
     id: db.id,
     title: db.title,
     description: db.description,
-    fullDescription: (db as any).full_description ?? undefined,
+    fullDescription: db.full_description ?? undefined,
     price: db.price,
     location: db.location,
     neighborhood: db.neighborhood,
@@ -22,35 +22,36 @@ function dbToProperty(db: DbProperty): Property {
     area: db.area,
     parkingSpots: db.parking_spots,
     featured: db.featured,
+    opportunity: db.opportunity ?? false,
     exclusive: db.exclusive,
     tag: db.tag ?? undefined,
     images: db.images ?? [],
     // Extended
-    refCode: (db as any).ref_code ?? undefined,
-    zone: (db as any).zone ?? undefined,
-    region: (db as any).region ?? undefined,
-    totalArea: (db as any).total_area ?? undefined,
-    builtArea: (db as any).built_area ?? undefined,
-    landArea: (db as any).land_area ?? undefined,
-    landFront: (db as any).land_front ?? undefined,
-    landBack: (db as any).land_back ?? undefined,
-    landLeft: (db as any).land_left ?? undefined,
-    landRight: (db as any).land_right ?? undefined,
-    rooms: (db as any).rooms ?? undefined,
-    accommodates: (db as any).accommodates ?? undefined,
-    furnished: (db as any).furnished ?? false,
-    swap: (db as any).swap ?? false,
-    acceptsFinancing: (db as any).accepts_financing ?? true,
-    contractType: (db as any).contract_type ?? undefined,
-    iptuPeriod: (db as any).iptu_period ?? undefined,
-    videoUrl: (db as any).video_url ?? undefined,
-    mapEmbedUrl: (db as any).map_embed_url ?? undefined,
-    nearby: (db as any).nearby ?? [],
-    leisure: (db as any).leisure ?? [],
-    roomsList: (db as any).rooms_list ?? [],
-    cep: (db as any).cep ?? undefined,
-    addressNumber: (db as any).address_number ?? undefined,
-    street: (db as any).street ?? undefined,
+    refCode: db.ref_code ?? undefined,
+    zone: db.zone ?? undefined,
+    region: db.region ?? undefined,
+    totalArea: db.total_area ?? undefined,
+    builtArea: db.built_area ?? undefined,
+    landArea: db.land_area ?? undefined,
+    landFront: db.land_front ?? undefined,
+    landBack: db.land_back ?? undefined,
+    landLeft: db.land_left ?? undefined,
+    landRight: db.land_right ?? undefined,
+    rooms: db.rooms ?? undefined,
+    accommodates: db.accommodates ?? undefined,
+    furnished: db.furnished ?? false,
+    swap: db.swap ?? false,
+    acceptsFinancing: db.accepts_financing ?? true,
+    contractType: db.contract_type ?? undefined,
+    iptuPeriod: db.iptu_period ?? undefined,
+    videoUrl: db.video_url ?? undefined,
+    mapEmbedUrl: db.map_embed_url ?? undefined,
+    nearby: db.nearby ?? [],
+    leisure: db.leisure ?? [],
+    roomsList: db.rooms_list ?? [],
+    cep: db.cep ?? undefined,
+    addressNumber: db.address_number ?? undefined,
+    street: db.street ?? undefined,
   };
 }
 
@@ -116,6 +117,7 @@ function formToDb(form: PropertyFormData) {
     area: form.area,
     parking_spots: form.parkingSpots,
     featured: form.featured,
+    opportunity: form.opportunity ?? false,
     exclusive: form.exclusive,
     tag: form.tag || null,
     images: form.images,
@@ -178,6 +180,47 @@ export function useUpdateProperty() {
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["properties"] }),
+  });
+}
+
+export function useUpdatePropertyShowcase() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      field,
+      value,
+    }: {
+      id: string;
+      field: "featured" | "opportunity";
+      value: boolean;
+    }) => {
+      const { error } = await supabase
+        .from("properties")
+        .update({ [field]: value })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onMutate: async ({ id, field, value }) => {
+      await qc.cancelQueries({ queryKey: ["properties"] });
+      const previousProperties = qc.getQueryData<Property[]>(["properties"]);
+
+      qc.setQueryData<Property[]>(["properties"], (current = []) =>
+        current.map((property) =>
+          property.id === id ? { ...property, [field]: value } : property,
+        ),
+      );
+
+      return { previousProperties };
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousProperties) {
+        qc.setQueryData(["properties"], context.previousProperties);
+      }
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["properties"] }),
   });
 }
 

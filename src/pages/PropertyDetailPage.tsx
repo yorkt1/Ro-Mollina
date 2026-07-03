@@ -659,6 +659,11 @@ export default function PropertyDetailPage() {
                 <span className="rounded-sm bg-secondary px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-foreground">
                   {propertyTypeLabel(property.type)}
                 </span>
+                {property.opportunity && (
+                  <span className="rounded-sm bg-emerald-600 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white">
+                    Oportunidade
+                  </span>
+                )}
                 {property.tag && (
                   <span className="rounded-sm bg-primary/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-foreground">
                     {property.tag}

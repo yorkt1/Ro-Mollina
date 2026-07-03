@@ -158,7 +158,7 @@ export default function AdminSettingsPage() {
               onChange={(e) => setNewDestPath(e.target.value)}
             >
               <option value="">Selecione uma página ou filtro...</option>
-              {(["Páginas do site", "Imóveis à venda", "Imóveis para locação"] as const).map(
+              {(["Páginas do site", "Vitrines personalizadas", "Imóveis à venda", "Imóveis para locação"] as const).map(
                 (group) => {
                   const options = availableDestinations.filter(
                     (option) => option.group === group,
