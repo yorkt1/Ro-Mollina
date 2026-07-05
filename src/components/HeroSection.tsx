@@ -3,9 +3,12 @@ import { ArrowRight, HousePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SocialIcons from "@/components/SocialIcons";
 import { useLanguage } from "@/hooks/use-language";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 
-const REALTOR_IMAGE =
-  "https://res.cloudinary.com/dqewxdbfx/image/upload/v1776179725/48_98862-7634_80_x_80_cm_80_x_60_cm_mdjzw2.png";
+const REALTOR_IMAGE = cloudinaryUrl(
+  "https://res.cloudinary.com/dqewxdbfx/image/upload/v1776179725/48_98862-7634_80_x_80_cm_80_x_60_cm_mdjzw2.png",
+  { width: 1200, quality: "auto:good", crop: "limit" },
+);
 
 export default function HeroSection() {
   const { t } = useLanguage();
@@ -21,6 +24,8 @@ export default function HeroSection() {
           aria-hidden="true"
           className="h-full w-full object-cover"
           style={{ objectPosition: "center 10%" }}
+          fetchPriority="high"
+          decoding="async"
         />
         <div
           className="absolute inset-0"
@@ -161,6 +166,7 @@ export default function HeroSection() {
                 src={REALTOR_IMAGE}
                 alt="Rosemarie Macedo Molina, corretora de imóveis"
                 className="h-full w-full"
+                decoding="async"
                 style={{
                   objectFit: "cover",
                   objectPosition: "center 15%",

@@ -2,10 +2,7 @@ import { useState, type ReactNode } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight, Loader2, MessageCircle, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 // hero background is now a CSS gradient — no image import needed
-import aboutImg from "@/assets/about-realtor.png";
-import property1 from "@/assets/property-1.jpg";
-import property2 from "@/assets/property-2.jpg";
-import property3 from "@/assets/property-3.jpg";
+import aboutImg from "@/assets/about-realtor.webp";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
@@ -20,6 +17,7 @@ import { useLifestyleHighlights } from "@/hooks/use-highlights";
 import { useYouTubeVideos } from "@/hooks/use-youtube-videos";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 import { getHighlightStorefrontLink } from "@/lib/storefront-filters";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 import SEO from "@/components/SEO";
 
 function RevealSection({ children, className = "", id }: { children: ReactNode; className?: string; id?: string }) {
@@ -83,36 +81,13 @@ function PaginatedGrid({ items, sectionKey }: { items: Property[]; sectionKey: s
   );
 }
 
-/* ── Fallback data for when Supabase tables are empty ── */
-
-const fallbackHighlights = [
-  {
-    image: property1,
-    title: "Apartamentos",
-    description: "Apartamentos premium prontos para morar com conforto e sofisticação.",
-    link: "/comprar/apartamento",
-  },
-  {
-    image: property2,
-    title: "Casas",
-    description: "Residências e casas de alto luxo nos melhores bairros de Santa Catarina.",
-    link: "/comprar/casa",
-  },
-  {
-    image: property3,
-    title: "Coberturas",
-    description: "Coberturas com vista panorâmica, terraço privativo e design impecável.",
-    link: "/comprar/cobertura",
-  },
-];
-
 // Sem fallback de vídeos — se o Supabase estiver vazio, a seção fica oculta.
 // Cadastre os vídeos reais pelo painel admin (/admin/youtube).
 const fallbackYouTubeVideos: { youtube_id: string; title: string; thumbnail: string }[] = [];
 
 export default function HomePage() {
   const { data: properties = [], isLoading } = useProperties();
-  const { data: highlights = [], error: highlightsError } = useLifestyleHighlights();
+  const { data: highlights = [] } = useLifestyleHighlights();
   const { data: youtubeVideos = [], error: youtubeError } = useYouTubeVideos();
 
   const opportunities = properties.filter((p) => p.opportunity);
@@ -124,15 +99,12 @@ export default function HomePage() {
   );
   const exclusives = properties.filter((p) => p.exclusive);
 
-  // Use Supabase data if available (no error + has items), otherwise fallback to hardcoded
-  const displayHighlights = (!highlightsError && highlights.length > 0)
-    ? highlights.map((h) => ({
-        image: h.image,
-        title: h.title,
-        description: h.description,
-        link: getHighlightStorefrontLink(h.title, h.link),
-      }))
-    : fallbackHighlights;
+  const displayHighlights = highlights.map((h) => ({
+    image: h.image,
+    title: h.title,
+    description: h.description,
+    link: getHighlightStorefrontLink(h.title, h.link),
+  }));
 
   const displayVideos = (!youtubeError && youtubeVideos.length > 0)
     ? youtubeVideos.map((v) => ({ youtube_id: v.youtube_id, title: v.title, thumbnail: v.thumbnail }))
@@ -188,28 +160,30 @@ export default function HomePage() {
       <SearchSection />
 
       {/* ─── Lifestyle Categories ─── */}
-      <RevealSection className="py-20 lg:py-28">
-        <div className="container space-y-8 px-6">
-          <SectionHeading
-            eyebrow="Categorias"
-            title="Encontre o imóvel certo para você"
-            description="Apartamentos, casas, coberturas e terrenos — cada categoria com curadoria exclusiva para o seu perfil."
-            align="center"
-          />
+      {displayHighlights.length > 0 && (
+        <RevealSection className="py-20 lg:py-28">
+          <div className="container space-y-8 px-6">
+            <SectionHeading
+              eyebrow="Categorias"
+              title="Encontre o imóvel certo para você"
+              description="Apartamentos, casas, coberturas e terrenos — cada categoria com curadoria exclusiva para o seu perfil."
+              align="center"
+            />
 
-          <div className="grid gap-6 md:grid-cols-3">
-            {displayHighlights.map((item, index) => (
-              <LifestyleCard
-                key={index}
-                image={item.image}
-                title={item.title}
-                description={item.description}
-                to={item.link}
-              />
-            ))}
+            <div className="grid gap-6 md:grid-cols-3">
+              {displayHighlights.map((item, index) => (
+                <LifestyleCard
+                  key={index}
+                  image={item.image}
+                  title={item.title}
+                  description={item.description}
+                  to={item.link}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      </RevealSection>
+        </RevealSection>
+      )}
 
       {/* Property lead capture CTA */}
       <RevealSection className="bg-[hsl(var(--navy-deep))] py-14 text-white lg:py-16">
@@ -353,10 +327,11 @@ export default function HomePage() {
                 >
                   <div className="relative aspect-video overflow-hidden">
                     <img
-                      src={video.thumbnail}
+                      src={cloudinaryUrl(video.thumbnail, { width: 800, crop: "limit" })}
                       alt={video.title}
                       className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                       loading="lazy"
+                      decoding="async"
                       onError={(e) => {
                         const img = e.currentTarget;
                         if (img.src.includes("maxresdefault")) {
@@ -400,6 +375,7 @@ export default function HomePage() {
               alt="Ro Molina, corretora de imóveis"
               className="relative mx-auto w-full max-w-sm rounded-sm shadow-xl"
               loading="lazy"
+              decoding="async"
             />
           </div>
 

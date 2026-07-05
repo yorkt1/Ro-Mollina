@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, SlidersHorizontal, Hash } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { properties, propertyTypeLabel, publicLocations, LOCATION_GROUPS, type PropertyPurpose, type PropertyType } from "@/data/properties";
+import { propertyTypeLabel, LOCATION_GROUPS, type PropertyPurpose, type PropertyType } from "@/data/properties";
+import { useProperties } from "@/hooks/use-properties";
 import { usePropertyTypes } from "@/hooks/use-property-types";
+import { propertyPath } from "@/lib/property-links";
 
 export default function SearchSection() {
   const navigate = useNavigate();
@@ -15,6 +17,7 @@ export default function SearchSection() {
   const [mode, setMode] = useState<"filters" | "reference">("filters");
   const [refCode, setRefCode] = useState("");
   const { data: propertyTypes = [] } = usePropertyTypes();
+  const { data: properties = [] } = useProperties();
 
   const handleSearch = () => {
     const params = new URLSearchParams();
@@ -28,10 +31,14 @@ export default function SearchSection() {
 
   const handleRefSearch = () => {
     if (!refCode.trim()) return;
+    const query = refCode.trim().toLowerCase();
     const found = properties.find(
-      (p) => p.id === refCode.trim() || p.title.toLowerCase().includes(refCode.trim().toLowerCase())
+      (p) =>
+        p.id === refCode.trim() ||
+        p.refCode?.toLowerCase() === query ||
+        p.title.toLowerCase().includes(query),
     );
-    navigate(found ? `/imoveis/${found.id}` : `/imoveis?search=${encodeURIComponent(refCode.trim())}`);
+    navigate(found ? propertyPath(found) : `/imoveis?search=${encodeURIComponent(refCode.trim())}`);
   };
 
   const selectClass =
@@ -42,6 +49,7 @@ export default function SearchSection() {
     "block text-xs uppercase tracking-[0.2em] text-accent font-semibold mb-1.5";
 
   const allGroupedLocations = LOCATION_GROUPS.flatMap(g => g.neighborhoods);
+  const publicLocations = Array.from(new Set(properties.map((property) => property.neighborhood)));
   const otherLocations = publicLocations.filter(loc => !allGroupedLocations.includes(loc));
 
   return (

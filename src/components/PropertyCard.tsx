@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BadgePercent, Bath, BedDouble, Car, MapPin, Maximize, Tag } from "lucide-react";
 import { Property, formatPropertyPrice, propertyTypeLabel, purposeLabel } from "@/data/properties";
@@ -5,17 +6,30 @@ import { cloudinaryUrl } from "@/lib/cloudinary";
 import { propertyPath } from "@/lib/property-links";
 
 export default function PropertyCard({ property }: { property: Property }) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
   return (
     <Link
       to={propertyPath(property)}
       className="group block overflow-hidden rounded-sm bg-card card-hover"
     >
       <div className="relative aspect-[4/3] overflow-hidden">
+        <div
+          aria-hidden="true"
+          className={`absolute inset-0 bg-secondary transition-opacity duration-500 ${
+            imageLoaded ? "pointer-events-none opacity-0" : "animate-pulse opacity-100"
+          }`}
+        />
         <img
           src={property.images[0] ? cloudinaryUrl(property.images[0], { width: 640, height: 480 }) : property.images[0]}
           alt={property.title}
-          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          className={`h-full w-full object-cover transition-[opacity,transform] duration-700 ease-out group-hover:scale-105 ${
+            imageLoaded ? "opacity-100" : "opacity-0"
+          }`}
           loading="lazy"
+          decoding="async"
+          onLoad={() => setImageLoaded(true)}
+          onError={() => setImageLoaded(true)}
         />
 
         <div className="absolute left-4 top-4 flex flex-wrap gap-2">

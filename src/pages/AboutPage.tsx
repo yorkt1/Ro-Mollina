@@ -20,7 +20,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import aboutImg from "@/assets/about-realtor.png";
+import aboutImg from "@/assets/about-realtor.webp";
 import { whatsappLink } from "@/data/properties";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 import SEO from "@/components/SEO";
@@ -186,6 +186,7 @@ export default function AboutPage() {
                 src={aboutImg}
                 alt="Rosemarie Macedo Molina — Corretora e Avaliadora de Imóveis"
                 className="relative rounded-sm object-cover shadow-xl"
+                decoding="async"
               />
             </div>
           </div>

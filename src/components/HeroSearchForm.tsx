@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { properties, propertyTypeLabel, publicLocations, LOCATION_GROUPS, type PropertyPurpose, type PropertyType } from "@/data/properties";
+import { propertyTypeLabel, LOCATION_GROUPS, type PropertyPurpose, type PropertyType } from "@/data/properties";
+import { useProperties } from "@/hooks/use-properties";
+import { propertyPath } from "@/lib/property-links";
 
 interface HeroSearchFormProps {
   variant?: "dark" | "light";
@@ -17,6 +19,7 @@ export default function HeroSearchForm({ variant = "light" }: HeroSearchFormProp
   const [location, setLocation] = useState("");
   const [reference, setReference] = useState(false);
   const [refCode, setRefCode] = useState("");
+  const { data: properties = [] } = useProperties();
 
   const handleSearch = () => {
     const params = new URLSearchParams();
@@ -30,11 +33,15 @@ export default function HeroSearchForm({ variant = "light" }: HeroSearchFormProp
 
   const handleRefSearch = () => {
     if (!refCode.trim()) return;
+    const query = refCode.trim().toLowerCase();
     const found = properties.find(
-      (p) => p.id === refCode.trim() || p.title.toLowerCase().includes(refCode.trim().toLowerCase())
+      (p) =>
+        p.id === refCode.trim() ||
+        p.refCode?.toLowerCase() === query ||
+        p.title.toLowerCase().includes(query),
     );
     if (found) {
-      navigate(`/imoveis/${found.id}`);
+      navigate(propertyPath(found));
     } else {
       navigate(`/imoveis?search=${encodeURIComponent(refCode.trim())}`);
     }
@@ -73,6 +80,7 @@ export default function HeroSearchForm({ variant = "light" }: HeroSearchFormProp
   const theme = variant === "light" ? lightTheme : darkTheme;
 
   const allGroupedLocations = LOCATION_GROUPS.flatMap(g => g.neighborhoods);
+  const publicLocations = Array.from(new Set(properties.map((property) => property.neighborhood)));
   const otherLocations = publicLocations.filter(loc => !allGroupedLocations.includes(loc));
 
   return (
