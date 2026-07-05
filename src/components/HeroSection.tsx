@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
-import { MessageCircle, ArrowRight } from "lucide-react";
+import { ArrowRight, HousePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SocialIcons from "@/components/SocialIcons";
-import { whatsappLink } from "@/data/properties";
 import { useLanguage } from "@/hooks/use-language";
 
 const REALTOR_IMAGE =
@@ -120,15 +119,16 @@ export default function HeroSection() {
               </Link>
             </Button>
 
-            <a
-              href={whatsappLink()}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex h-11 items-center gap-2 rounded border border-white/30 bg-white/10 px-5 text-sm font-medium text-white shadow-sm backdrop-blur-sm transition-all hover:border-[#d4a84b]/70 hover:text-[#d4a84b] lg:border-slate-300 lg:bg-white/80 lg:text-slate-700"
+            <Button
+              asChild
+              size="lg"
+              className="border border-accent/70 bg-[hsl(var(--navy-deep))] px-6 text-white shadow-[0_8px_28px_rgba(15,23,42,0.22)] hover:bg-accent hover:text-primary hover:shadow-[0_12px_36px_rgba(212,168,75,0.3)]"
             >
-              <MessageCircle size={16} />
-              WhatsApp
-            </a>
+              <Link to="/negocie-seu-imovel">
+                <HousePlus size={17} />
+                {t.listProperty}
+              </Link>
+            </Button>
           </div>
 
           {/* Social icons */}
