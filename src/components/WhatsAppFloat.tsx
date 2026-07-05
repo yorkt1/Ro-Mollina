@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { useLocation } from "react-router-dom";
 import { whatsappLink } from "@/data/properties";
 import { trackWhatsAppClick } from "@/lib/analytics";
@@ -6,82 +5,19 @@ import { trackWhatsAppClick } from "@/lib/analytics";
 const WHATSAPP_URL = whatsappLink(
   "Olá! Vim pelo site e gostaria de mais informações sobre os imóveis.",
 );
-const NOTIFICATION_TEXT = "Fale comigo! 👋";
-const FIRST_DELAY = 3000;
-const REPEAT_INTERVAL = 18000;
-const VISIBLE_DURATION = 5000;
-
 export default function WhatsAppFloat() {
   const { pathname } = useLocation();
   const hiddenOnAdmin = pathname.startsWith("/admin");
-  const [hovered, setHovered] = useState(false);
-  const [showNotification, setShowNotification] = useState(false);
-  const [typedText, setTypedText] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
-  const typingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const hideRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (dismissed || hiddenOnAdmin) return;
-
-    const runNotification = () => {
-      setShowNotification(true);
-      setIsTyping(true);
-      setTypedText("");
-
-      let characterIndex = 0;
-      const typeNextCharacter = () => {
-        characterIndex += 1;
-        setTypedText(NOTIFICATION_TEXT.slice(0, characterIndex));
-
-        if (characterIndex < NOTIFICATION_TEXT.length) {
-          typingRef.current = setTimeout(typeNextCharacter, 55);
-          return;
-        }
-
-        setIsTyping(false);
-        hideRef.current = setTimeout(() => {
-          setShowNotification(false);
-          setTypedText("");
-        }, VISIBLE_DURATION);
-      };
-
-      typingRef.current = setTimeout(typeNextCharacter, 55);
-    };
-
-    const firstTimer = setTimeout(runNotification, FIRST_DELAY);
-    const repeatTimer = setInterval(runNotification, REPEAT_INTERVAL);
-
-    return () => {
-      clearTimeout(firstTimer);
-      clearInterval(repeatTimer);
-      if (typingRef.current) clearTimeout(typingRef.current);
-      if (hideRef.current) clearTimeout(hideRef.current);
-    };
-  }, [dismissed, hiddenOnAdmin]);
 
   if (hiddenOnAdmin) return null;
-
-  const handleDismiss = (event: MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setDismissed(true);
-    setShowNotification(false);
-    if (typingRef.current) clearTimeout(typingRef.current);
-    if (hideRef.current) clearTimeout(hideRef.current);
-  };
 
   return (
     <>
       <style>{`
-        @keyframes wa-bubble-in {
-          from { opacity: 0; transform: translateY(12px) scale(0.88); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes wa-blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0; }
+        @keyframes wa-pulse {
+          0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.55); }
+          70% { box-shadow: 0 0 0 16px rgba(37, 211, 102, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
         }
         .wa-float-wrap {
           position: fixed;
@@ -97,19 +33,10 @@ export default function WhatsAppFloat() {
         .wa-float-button {
           width: 56px;
           height: 56px;
+          animation: wa-pulse 2.2s infinite;
         }
-        .wa-notification {
-          animation: wa-bubble-in 0.35s cubic-bezier(.34, 1.56, .64, 1) forwards;
-        }
-        .wa-cursor {
-          display: inline-block;
-          width: 2px;
-          height: 14px;
-          margin-left: 2px;
-          border-radius: 1px;
-          background: rgba(255, 255, 255, 0.85);
-          vertical-align: middle;
-          animation: wa-blink 0.7s step-end infinite;
+        .wa-float-button:hover {
+          animation: none;
         }
         @media (min-width: 640px) {
           .wa-float-wrap {
@@ -122,60 +49,13 @@ export default function WhatsAppFloat() {
           }
         }
         @media (prefers-reduced-motion: reduce) {
-          .wa-notification,
-          .wa-cursor {
+          .wa-float-button {
             animation: none;
           }
         }
       `}</style>
 
       <div className="wa-float-wrap">
-        {showNotification && (
-          <div
-            className="wa-notification relative box-border w-auto max-w-[min(230px,calc(100vw-32px))] select-none rounded-[16px_16px_4px_16px] bg-[#128C7E] py-2.5 pl-3.5 pr-9 text-sm font-medium leading-snug tracking-[0.01em] text-white shadow-[0_6px_24px_rgba(0,0,0,0.22)]"
-            role="status"
-            aria-live="polite"
-          >
-            <div className="mb-1 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.04em] opacity-80">
-              <svg width="12" height="12" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
-                <path d="M16.003 2.667C8.637 2.667 2.667 8.637 2.667 16.003c0 2.352.617 4.642 1.79 6.655L2.667 29.333l6.878-1.764c1.94 1.06 4.13 1.618 6.458 1.618 7.366 0 13.333-5.97 13.333-13.334C29.336 8.637 23.369 2.667 16.003 2.667z" />
-              </svg>
-              Ro Molina Imóveis
-            </div>
-
-            <span className="block text-[#e8fdd8]">
-              {typedText}
-              {isTyping && <span className="wa-cursor" />}
-            </span>
-
-            {!isTyping && (
-              <span className="mt-1 block text-right text-[11px] opacity-65">
-                agora ✓✓
-              </span>
-            )}
-
-            <button
-              type="button"
-              onClick={handleDismiss}
-              aria-label="Fechar aviso do WhatsApp"
-              className="absolute right-2 top-1.5 border-0 bg-transparent px-1 py-0.5 text-sm leading-none text-white/70 transition-colors hover:text-white"
-            >
-              ×
-            </button>
-
-            <span
-              className="absolute -bottom-2 right-3.5 h-0 w-0 border-l-[8px] border-t-[8px] border-l-transparent border-t-[#128C7E]"
-              aria-hidden="true"
-            />
-          </div>
-        )}
-
-        {!showNotification && hovered && (
-          <div className="wa-notification pointer-events-none whitespace-nowrap rounded-full bg-[#25D366] px-3.5 py-1.5 text-[13px] font-semibold text-white shadow-[0_4px_16px_rgba(37,211,102,0.35)]">
-            Fale comigo!
-          </div>
-        )}
-
         <a
           href={WHATSAPP_URL}
           target="_blank"
@@ -183,9 +63,7 @@ export default function WhatsAppFloat() {
           aria-label="Falar com Ro Molina pelo WhatsApp"
           data-gtm-link="whatsapp_float"
           onClick={() => trackWhatsAppClick("floating_button")}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-          className="wa-float-button flex shrink-0 items-center justify-center rounded-full bg-[#25D366]"
+          className="wa-float-button flex shrink-0 items-center justify-center rounded-full bg-[#25D366] transition-transform duration-200 hover:scale-110"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
