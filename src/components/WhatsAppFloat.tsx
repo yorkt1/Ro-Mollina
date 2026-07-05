@@ -75,11 +75,6 @@ export default function WhatsAppFloat() {
   return (
     <>
       <style>{`
-        @keyframes wa-pulse {
-          0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.55); }
-          70% { box-shadow: 0 0 0 16px rgba(37, 211, 102, 0); }
-          100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
-        }
         @keyframes wa-bubble-in {
           from { opacity: 0; transform: translateY(12px) scale(0.88); }
           to { opacity: 1; transform: translateY(0) scale(1); }
@@ -102,10 +97,6 @@ export default function WhatsAppFloat() {
         .wa-float-button {
           width: 56px;
           height: 56px;
-          animation: wa-pulse 2.2s infinite;
-        }
-        .wa-float-button:hover {
-          animation: none;
         }
         .wa-notification {
           animation: wa-bubble-in 0.35s cubic-bezier(.34, 1.56, .64, 1) forwards;
@@ -131,7 +122,6 @@ export default function WhatsAppFloat() {
           }
         }
         @media (prefers-reduced-motion: reduce) {
-          .wa-float-button,
           .wa-notification,
           .wa-cursor {
             animation: none;
@@ -195,9 +185,7 @@ export default function WhatsAppFloat() {
           onClick={() => trackWhatsAppClick("floating_button")}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
-          className={`wa-float-button flex shrink-0 items-center justify-center rounded-full bg-[#25D366] transition-transform duration-200 ${
-            hovered ? "scale-110" : "scale-100"
-          }`}
+          className="wa-float-button flex shrink-0 items-center justify-center rounded-full bg-[#25D366]"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
