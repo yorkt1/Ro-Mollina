@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { formatPropertyPrice, propertyTypeLabel, purposeLabel, whatsappLink } from "@/data/properties";
 import { useProperty, useProperties } from "@/hooks/use-properties";
 import SEO from "@/components/SEO";
-import { propertyPath } from "@/lib/property-links";
+import { propertyPath, propertySlug } from "@/lib/property-links";
 
 /* ── helpers ─────────────────────────────────── */
 
@@ -25,6 +25,12 @@ function extractPropertyId(id: string | undefined, legacySlug: string | undefine
   }
 
   if (/^[0-9]+$/.test(id)) {
+    if (legacySlug) {
+      const matched = allProperties.find(
+        (item) => propertySlug(item as any) === legacySlug
+      );
+      if (matched) return matched.id;
+    }
     return allProperties.find((item) => String(item.shortId) === id)?.id ?? id;
   }
 

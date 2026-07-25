@@ -29,6 +29,6 @@ export function propertySlug(property: Pick<Property, "id" | "title" | "neighbor
 }
 
 export function propertyPath(property: Pick<Property, "id" | "title" | "neighborhood"> & { shortId?: number }, shortId?: number) {
-  const routeId = shortId ?? property.shortId ?? property.id;
-  return `/imovel/${routeId}/${propertySlug(property)}`;
+  // Ensure we use the stable UUID (property.id) instead of shifting shortIds.
+  return `/imovel/${property.id}/${propertySlug(property)}`;
 }

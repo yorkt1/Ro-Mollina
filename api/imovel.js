@@ -66,6 +66,33 @@ function formatPrice(price) {
     : "Sob consulta";
 }
 
+const ACCENT_MAP = {
+  á: "a", à: "a", â: "a", ã: "a", ä: "a",
+  é: "e", è: "e", ê: "e", ë: "e",
+  í: "i", ì: "i", î: "i", ï: "i",
+  ó: "o", ò: "o", ô: "o", õ: "o", ö: "o",
+  ú: "u", ù: "u", û: "u", ü: "u",
+  ç: "c", ñ: "n",
+};
+
+function normalizeText(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\/]+/g, "-")
+    .replace(/[^\w\s-]/g, (char) => ACCENT_MAP[char] ?? "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase();
+}
+
+function propertySlug(property) {
+  const titleWords = normalizeText(property.title).split("-").filter(Boolean);
+  const compactTitle = titleWords.slice(0, 3).join("-");
+  const district = normalizeText(property.neighborhood);
+  return [compactTitle, district].filter(Boolean).join("-");
+}
+
 /**
  * Normaliza a URL da imagem para o preview.
  * Em imagens do Cloudinary, injeta uma transformação que entrega exatamente
@@ -87,7 +114,7 @@ function ogImageUrl(raw) {
  * Aceita: UUID (direto), número (shortId = posição em created_at desc) ou
  * slug legado que contenha um UUID no final.
  */
-async function fetchProperty(rawId) {
+async function fetchProperty(rawId, rawSlug) {
   const id = String(rawId ?? "").trim();
   if (!id) return null;
 
@@ -109,6 +136,13 @@ async function fetchProperty(rawId) {
     );
     if (!res.ok) return null;
     const rows = await res.json();
+    
+    if (rawSlug) {
+      const slugStr = String(rawSlug).trim();
+      const matched = rows.find(item => propertySlug(item) === slugStr);
+      if (matched) return matched;
+    }
+
     return rows[Number(id) - 1] ?? null;
   }
 
@@ -216,11 +250,12 @@ function injectMeta(html, meta) {
 
 export default async function handler(req, res) {
   const id = req.query?.id ?? "";
+  const slug = req.query?.slug ?? "";
   const host = safeHost(req);
 
   let meta;
   try {
-    const property = await fetchProperty(id);
+    const property = await fetchProperty(id, slug);
     meta = buildMeta(property, host);
   } catch {
     meta = buildMeta(null, host);
