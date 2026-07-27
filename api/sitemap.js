@@ -94,7 +94,7 @@ export default async function handler(req, res) {
   let properties = [];
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/properties?select=id,title,neighborhood,images,updated_at,created_at&order=created_at.desc`,
+      `${SUPABASE_URL}/rest/v1/properties?select=id,title,neighborhood,images,created_at&order=created_at.desc`,
       {
         headers: {
           apikey: SUPABASE_ANON_KEY,
@@ -119,7 +119,7 @@ export default async function handler(req, res) {
     const shortId = index + 1;
     const slug = propertySlug(property);
     const loc = `${SITE_URL}/imovel/${shortId}/${slug}`;
-    const lastmod = w3cDate(property.updated_at || property.created_at);
+    const lastmod = w3cDate(property.created_at);
 
     // Inclui até 10 imagens por imóvel para indexação de imagens no Google
     const images = Array.isArray(property.images)
