@@ -98,13 +98,33 @@ function propertySlug(property) {
  * Em imagens do Cloudinary, injeta uma transformação que entrega exatamente
  * 1200x630 (proporção ideal de card OG) — assim podemos declarar width/height
  * corretos e todo preview fica no mesmo formato. Outras URLs ficam como estão.
+ *
+ * Trata URLs que já possuem transformações existentes, evitando duplo-transform.
+ * Ex: /upload/c_fill,w_800/v123/foto.jpg  →  /upload/c_fill,w_1200,h_630,q_auto,f_jpg/v123/foto.jpg
  */
 function ogImageUrl(raw) {
   if (!raw) return { url: DEFAULT_IMAGE, sized: false };
   const abs = /^https?:\/\//i.test(raw) ? raw : `${SITE_URL}/${raw.replace(/^\//, "")}`;
+  // Detecta URL do Cloudinary: captura a base até /upload/ e o restante
   const cloudinary = abs.match(/^(https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(.+)$/i);
   if (cloudinary) {
-    return { url: `${cloudinary[1]}c_fill,w_1200,h_630,q_auto,f_jpg/${cloudinary[2]}`, sized: true };
+    const afterUpload = cloudinary[2];
+    // Remove transformações existentes (segmentos que NÃO começam com 'v' seguido de dígitos
+    // e que NÃO são o public_id — ou seja, segmentos de transform como c_fill,w_800,...)
+    // Segmentos de transform: começam com letra(s) seguidas de _ (ex: c_, w_, h_, q_, f_, l_, ...)
+    // Segmentos de versão: v seguido de dígitos (ex: v1234567890)
+    // Public ID: tudo depois da versão ou diretamente o caminho do arquivo
+    const segments = afterUpload.split("/");
+    // Pula segmentos de transformação (ex: "c_fill,w_800" ou "q_auto") até encontrar versão ou public_id
+    const nonTransformIdx = segments.findIndex(
+      (seg) => /^v\d+$/.test(seg) || // versão (v1234567890)
+               !/^[a-z_]+[a-z0-9]*_/.test(seg.split(",")[0]) // não parece um transform
+    );
+    const publicPart = nonTransformIdx >= 0 ? segments.slice(nonTransformIdx).join("/") : afterUpload;
+    return {
+      url: `${cloudinary[1]}c_fill,w_1200,h_630,q_auto,f_jpg/${publicPart}`,
+      sized: true,
+    };
   }
   return { url: abs, sized: false };
 }
@@ -113,11 +133,17 @@ function ogImageUrl(raw) {
  * Resolve o imóvel a partir do segmento da URL.
  * Aceita: UUID (direto), número (shortId = posição em created_at desc) ou
  * slug legado que contenha um UUID no final.
+ *
+ * Estratégia de lookup (ordem de prioridade):
+ * 1. UUID direto → busca exata por ID
+ * 2. Slug na URL → match exato de slug (mais confiável que índice)
+ * 3. shortId numérico → índice na lista ordenada por created_at desc (fallback)
  */
 async function fetchProperty(rawId, rawSlug) {
   const id = String(rawId ?? "").trim();
   if (!id) return null;
 
+  // 1. UUID direto
   const uuid = id.match(UUID_RE);
   if (uuid) {
     const res = await fetch(
@@ -130,27 +156,34 @@ async function fetchProperty(rawId, rawSlug) {
   }
 
   if (/^\d+$/.test(id)) {
+    // Busca todos uma única vez (necessário para ambos os casos: slug e índice)
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/properties?select=*&order=created_at.desc`,
       { headers: supabaseHeaders },
     );
     if (!res.ok) return null;
     const rows = await res.json();
-    
+
+    // 2. Slug é a fonte mais confiável — usa como lookup primário
     if (rawSlug) {
       const slugStr = String(rawSlug).trim();
-      const matched = rows.find(item => propertySlug(item) === slugStr);
+      const matched = rows.find((item) => propertySlug(item) === slugStr);
+      // Se o slug bateu E o índice também confere, ótimo.
+      // Se só o slug bateu (índice diferente), preferimos o slug — mais preciso.
       if (matched) return matched;
+      // Se o slug não bateu (raro: título/bairro mudou), cai no índice abaixo.
     }
 
-    return rows[Number(id) - 1] ?? null;
+    // 3. Fallback: índice (mesmo que o React usa via shortId = index + 1)
+    const idx = Number(id) - 1;
+    return rows[idx] ?? null;
   }
 
   return null;
 }
 
 /** Monta título, descrição e imagem do preview a partir do imóvel. */
-function buildMeta(property, host) {
+function buildMeta(property, host, rawId, rawSlug) {
   if (!property) {
     return {
       title: `${SITE_NAME} — Imóveis de Alto Padrão em Florianópolis`,
@@ -181,12 +214,21 @@ function buildMeta(property, host) {
   const firstImage = Array.isArray(property.images) ? property.images[0] : null;
   const { url: image, sized: imageSized } = ogImageUrl(firstImage);
 
+  // URL canônica: usa o rawId (shortId) e slug da URL original se disponíveis,
+  // caso contrário usa o UUID do imóvel como fallback.
+  const slugStr = rawSlug || propertySlug(property);
+  const routeId = rawId || property.id;
+  const canonicalUrl = slugStr
+    ? `${SITE_URL}/imovel/${routeId}/${slugStr}`
+    : `${SITE_URL}/imovel/${property.id}`;
+
   return {
     title: `${clean(property.title)} | ${SITE_NAME}`,
     description,
     image,
     imageSized,
-    url: `${SITE_URL}/imovel/${property.id}`,
+    // URL canônica reflete a URL real da página (shortId/slug), não o UUID interno
+    url: canonicalUrl,
   };
 }
 
@@ -256,9 +298,9 @@ export default async function handler(req, res) {
   let meta;
   try {
     const property = await fetchProperty(id, slug);
-    meta = buildMeta(property, host);
+    meta = buildMeta(property, host, id, slug);
   } catch {
-    meta = buildMeta(null, host);
+    meta = buildMeta(null, host, id, slug);
   }
 
   // Busca o shell estático da SPA e injeta as meta tags.
