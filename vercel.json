@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/imovel/:id", "destination": "/api/imovel?id=:id" },
     { "source": "/imovel/:id/:slug", "destination": "/api/imovel?id=:id&slug=:slug" },
     { "source": "/imovel/:id/:slug/:rest*", "destination": "/api/imovel?id=:id&slug=:slug" },

@@ -2,4 +2,23 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 
-Sitemap: https://romolinaimoveis.com.br/sitemap.xml
+# Bots de busca e IA — acesso total ao conteúdo de imóveis
+User-agent: Googlebot
+Allow: /
+
+User-agent: bingbot
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+Sitemap: https://www.romolinaimoveis.com.br/sitemap.xml
