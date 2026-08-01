@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 
 export type Language = "pt" | "en" | "es";
 
@@ -10,6 +10,7 @@ interface Translations {
   about: string;
   contact: string;
   listProperty: string;
+  viewAll: string;
   // Hero
   heroTitle: string;
   heroSubtitle: string;
@@ -35,6 +36,10 @@ interface Translations {
   house: string;
   penthouse: string;
   land: string;
+  apartments: string;
+  houses: string;
+  penthouses: string;
+  lands: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -45,6 +50,7 @@ const translations: Record<Language, Translations> = {
     about: "Sobre",
     contact: "Contato",
     listProperty: "Negocie seu Imóvel",
+    viewAll: "Ver todos",
     heroTitle: "Rosemarie Macedo Molina",
     heroSubtitle: "Corretora e Avaliadora de Imóveis",
     heroDescription: "Imóveis, patrimônio e consultoria especializada em Florianópolis e região.",
@@ -67,6 +73,10 @@ const translations: Record<Language, Translations> = {
     house: "Casa",
     penthouse: "Cobertura",
     land: "Terreno",
+    apartments: "Apartamentos",
+    houses: "Casas",
+    penthouses: "Coberturas",
+    lands: "Terrenos",
   },
   en: {
     home: "Home",
@@ -75,6 +85,7 @@ const translations: Record<Language, Translations> = {
     about: "About",
     contact: "Contact",
     listProperty: "List Your Property",
+    viewAll: "View all",
     heroTitle: "Rosemarie Macedo Molina",
     heroSubtitle: "Real Estate Broker & Appraiser",
     heroDescription: "Premium sales, rentals and real estate consulting in Florianópolis and region.",
@@ -97,6 +108,10 @@ const translations: Record<Language, Translations> = {
     house: "House",
     penthouse: "Penthouse",
     land: "Land",
+    apartments: "Apartments",
+    houses: "Houses",
+    penthouses: "Penthouses",
+    lands: "Land",
   },
   es: {
     home: "Inicio",
@@ -105,6 +120,7 @@ const translations: Record<Language, Translations> = {
     about: "Sobre",
     contact: "Contacto",
     listProperty: "Publique su Propiedad",
+    viewAll: "Ver todos",
     heroTitle: "Rosemarie Macedo Molina",
     heroSubtitle: "Corredora y Tasadora de Inmuebles",
     heroDescription: "Venta, alquiler y asesoría inmobiliaria premium en Florianópolis y región.",
@@ -127,6 +143,10 @@ const translations: Record<Language, Translations> = {
     house: "Casa",
     penthouse: "Ático",
     land: "Terreno",
+    apartments: "Apartamentos",
+    houses: "Casas",
+    penthouses: "Áticos",
+    lands: "Terrenos",
   },
 };
 
@@ -146,7 +166,30 @@ interface LanguageContextValue {
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Language>("pt");
+  const [lang, setLangState] = useState<Language>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("app_lang") as Language;
+      if (saved && ["pt", "en", "es"].includes(saved)) return saved;
+    }
+    return "pt";
+  });
+
+  const setLang = (newLang: Language) => {
+    setLangState(newLang);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("app_lang", newLang);
+      document.documentElement.lang = newLang;
+      document.cookie = `googtrans=/pt/${newLang}; path=/;`;
+      document.cookie = `googtrans=/pt/${newLang}; domain=${window.location.hostname}; path=/;`;
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      document.documentElement.lang = lang;
+    }
+  }, [lang]);
+
   return (
     <LanguageContext.Provider value={{ lang, setLang, t: translations[lang], languageLabels }}>
       {children}

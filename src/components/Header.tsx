@@ -27,11 +27,13 @@ function NavDropdown({
   to,
   items,
   isActive,
+  viewAllLabel,
 }: {
   label: string;
   to: string;
   items: { label: string; to: string; icon: React.ElementType }[];
   isActive: boolean;
+  viewAllLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -81,7 +83,7 @@ function NavDropdown({
           className="flex items-center gap-2 border-b border-border px-4 py-3 text-[12px] uppercase tracking-[0.18em] text-accent transition-colors hover:bg-accent/10"
           onClick={() => setOpen(false)}
         >
-          Ver todos
+          {viewAllLabel || "Ver todos"}
           <ChevronDown size={11} className="-rotate-90" />
         </Link>
 
@@ -122,22 +124,31 @@ export default function Header() {
     return Building2; // Default
   };
 
+  const getTranslatedTypeName = (name: string) => {
+    const n = name.toLowerCase();
+    if (n.includes("apartamento")) return t.apartments;
+    if (n.includes("casa")) return t.houses;
+    if (n.includes("cobertura")) return t.penthouses;
+    if (n.includes("terreno")) return t.lands;
+    return propertyTypeLabel(name);
+  };
+
   // Derive menu items directly from Property Types
   const autoBuyItems = [
-    { label: "Ver todos", to: "/comprar", icon: Home },
-    ...propertyTypes.map(t => ({
-      label: propertyTypeLabel(t.name),
-      to: `/comprar/${t.name}`,
-      icon: getLinkIcon(t.name)
+    { label: t.viewAll, to: "/comprar", icon: Home },
+    ...propertyTypes.map(pt => ({
+      label: getTranslatedTypeName(pt.name),
+      to: `/comprar/${pt.name}`,
+      icon: getLinkIcon(pt.name)
     }))
   ];
 
   const autoRentItems = [
-    { label: "Ver todos", to: "/alugar", icon: Building2 },
-    ...propertyTypes.map(t => ({
-      label: propertyTypeLabel(t.name),
-      to: `/alugar/${t.name}`,
-      icon: getLinkIcon(t.name)
+    { label: t.viewAll, to: "/alugar", icon: Building2 },
+    ...propertyTypes.map(pt => ({
+      label: getTranslatedTypeName(pt.name),
+      to: `/alugar/${pt.name}`,
+      icon: getLinkIcon(pt.name)
     }))
   ];
 
@@ -216,7 +227,7 @@ export default function Header() {
                   isActive("/") ? "active text-foreground" : ""
                 }`}
               >
-                Início
+                {t.home}
               </a>
             </li>
 
@@ -227,6 +238,7 @@ export default function Header() {
                 to="/comprar"
                 items={finalBuyItems}
                 isActive={isActive("/comprar")}
+                viewAllLabel={t.viewAll}
               />
             </li>
 
@@ -237,6 +249,7 @@ export default function Header() {
                 to="/alugar"
                 items={finalRentItems}
                 isActive={isActive("/alugar")}
+                viewAllLabel={t.viewAll}
               />
             </li>
 
@@ -248,7 +261,7 @@ export default function Header() {
                   isActive("/sobre") ? "active text-foreground" : ""
                 }`}
               >
-                Sobre
+                {t.about}
               </Link>
             </li>
 
@@ -258,7 +271,7 @@ export default function Header() {
                 href="/#contato"
                 className="nav-link text-[13px] uppercase tracking-[0.2em]"
               >
-                Contato
+                {t.contact}
               </a>
             </li>
 
@@ -355,7 +368,7 @@ export default function Header() {
               className="py-2.5 text-sm uppercase tracking-[0.2em] text-foreground/70 transition-colors hover:text-foreground"
               onClick={() => setOpen(false)}
             >
-              Início
+              {t.home}
             </Link>
 
             {/* Comprar expandable */}
@@ -415,7 +428,7 @@ export default function Header() {
               className="py-2.5 text-sm uppercase tracking-[0.2em] text-foreground/70 transition-colors hover:text-foreground"
               onClick={() => setOpen(false)}
             >
-              Sobre
+              {t.about}
             </Link>
 
             <a
@@ -423,7 +436,7 @@ export default function Header() {
               className="py-2.5 text-sm uppercase tracking-[0.2em] text-foreground/70 transition-colors hover:text-foreground"
               onClick={() => setOpen(false)}
             >
-              Contato
+              {t.contact}
             </a>
 
 
