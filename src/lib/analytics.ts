@@ -20,7 +20,7 @@ export function pushDataLayerEvent(
   });
 }
 
-const GOOGLE_ADS_CONVERSION_SEND_TO = "AW-18281666046/_q3TCMDJsNocEP6rsl1E";
+const GOOGLE_ADS_CONVERSION_SEND_TO = "AW-18281666046/nGA7CNH1otocEP6rsI1E";
 
 function triggerGoogleAdsConversion() {
   if (typeof window !== "undefined" && typeof window.gtag === "function") {
