@@ -3,6 +3,7 @@ type DataLayerValue = Record<string, string | number | boolean>;
 declare global {
   interface Window {
     dataLayer?: DataLayerValue[];
+    gtag?: (...args: any[]) => void;
   }
 }
 
@@ -19,6 +20,16 @@ export function pushDataLayerEvent(
   });
 }
 
+const GOOGLE_ADS_CONVERSION_SEND_TO = "AW-18281666046/_q3TCMDJsNocEP6rsl1E";
+
+function triggerGoogleAdsConversion() {
+  if (typeof window !== "undefined" && typeof window.gtag === "function") {
+    window.gtag("event", "conversion", {
+      send_to: GOOGLE_ADS_CONVERSION_SEND_TO,
+    });
+  }
+}
+
 export function trackLeadFormSuccess() {
   pushDataLayerEvent("generate_lead", {
     form_id: "property_listing_form",
@@ -26,6 +37,7 @@ export function trackLeadFormSuccess() {
     lead_source: "website",
     page_path: `${window.location.pathname}${window.location.search}`,
   });
+  triggerGoogleAdsConversion();
 }
 
 export function trackWhatsAppClick(linkLocation: string) {
@@ -33,4 +45,5 @@ export function trackWhatsAppClick(linkLocation: string) {
     link_location: linkLocation,
     page_path: `${window.location.pathname}${window.location.search}`,
   });
+  triggerGoogleAdsConversion();
 }
