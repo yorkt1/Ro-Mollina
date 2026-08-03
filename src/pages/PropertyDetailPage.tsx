@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, type FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { Link, useParams } from "react-router-dom";
 import {
@@ -13,6 +13,8 @@ import PropertyCard from "@/components/PropertyCard";
 import { Button } from "@/components/ui/button";
 import { formatPropertyPrice, propertyTypeLabel, purposeLabel, whatsappLink } from "@/data/properties";
 import { useProperty, useProperties } from "@/hooks/use-properties";
+import { useSubmitWebsiteLead } from "@/hooks/use-leads";
+import { useToast } from "@/hooks/use-toast";
 import SEO from "@/components/SEO";
 import { propertyPath, propertySlug } from "@/lib/property-links";
 
@@ -406,6 +408,179 @@ const LEISURE_ICONS: Record<string, React.ElementType> = {
   "Playground": Trees,
 };
 
+function LeadCaptureModal({
+  isOpen,
+  onClose,
+  whatsappHref,
+  propertyTitle,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  whatsappHref: string;
+  propertyTitle: string;
+}) {
+  const submitLead = useSubmitWebsiteLead();
+  const { toast } = useToast();
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    website: "", // honeypot
+  });
+
+  // Handle ESC key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
+  // Lock scroll
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (form.website) return; // Spam check
+
+    try {
+      await submitLead.mutateAsync({
+        name: form.name,
+        phone: form.phone,
+        email: form.email,
+        interest: "venda",
+        website: form.website,
+        message: `Interesse no imóvel: ${propertyTitle}`,
+        marketingData: {
+          landing_page: window.location.href,
+        },
+      });
+      // Regardless of success/fail toast, proceed to WhatsApp
+      window.open(whatsappHref, "_blank");
+      onClose();
+    } catch {
+      // In case of error, we still want to redirect so we don't lose the lead
+      toast({
+        title: "Aviso",
+        description: "Houve uma falha ao salvar, mas vamos te direcionar para o WhatsApp.",
+        variant: "destructive",
+      });
+      window.open(whatsappHref, "_blank");
+      onClose();
+    }
+  };
+
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm sm:p-6 animate-in fade-in duration-200">
+      <div 
+        className="w-full max-w-md overflow-hidden rounded-sm bg-background shadow-2xl animate-in zoom-in-95 duration-200"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div className="flex items-center justify-between border-b border-border p-4 sm:p-5">
+          <h2 className="text-lg font-semibold text-foreground">Receber mais informações</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-sm p-1 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {submitLead.isSuccess ? (
+          <div className="flex flex-col items-center justify-center p-8 text-center">
+            <CheckCircle2 size={48} className="text-emerald-500 mb-4" />
+            <h3 className="text-xl font-medium mb-2">Tudo certo!</h3>
+            <p className="text-sm text-muted-foreground">Abrindo o WhatsApp...</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4">
+            <p className="text-sm text-muted-foreground mb-4">
+              Deixe seu contato para que nossa equipe possa te auxiliar de forma personalizada.
+            </p>
+
+            <div className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
+              <label htmlFor="website">Não preencha</label>
+              <input
+                id="website"
+                type="text"
+                tabIndex={-1}
+                value={form.website}
+                onChange={e => setForm(f => ({ ...f, website: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="name" className="text-sm font-medium">Nome completo *</label>
+              <input
+                id="name"
+                required
+                type="text"
+                value={form.name}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                className="w-full rounded-sm border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-colors"
+                placeholder="Ex: João Silva"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="phone" className="text-sm font-medium">WhatsApp *</label>
+              <input
+                id="phone"
+                required
+                type="tel"
+                value={form.phone}
+                onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                className="w-full rounded-sm border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-colors"
+                placeholder="(DDD) 99999-9999"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="email" className="text-sm font-medium">E-mail (opcional)</label>
+              <input
+                id="email"
+                type="email"
+                value={form.email}
+                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                className="w-full rounded-sm border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-colors"
+                placeholder="seu@email.com"
+              />
+            </div>
+
+            <div className="pt-2">
+              <Button type="submit" disabled={submitLead.isPending} className="w-full h-11 bg-[hsl(var(--navy-deep))] hover:bg-[hsl(var(--navy-deep))/90] text-white">
+                {submitLead.isPending
+                  ? <><Loader2 size={16} className="animate-spin" /> Salvando...</>
+                  : <><MessageCircle size={18} /> Continuar para o WhatsApp</>
+                }
+              </Button>
+              <p className="mt-3 text-center text-[11px] text-muted-foreground">
+                Seus dados são usados apenas para atendimento e nunca compartilhados.
+              </p>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
 export default function PropertyDetailPage() {
   const { id, legacySlug } = useParams();
   const { data: allProperties = [] } = useProperties();
@@ -414,6 +589,7 @@ export default function PropertyDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const [leadModalOpen, setLeadModalOpen] = useState(false);
 
   const related = useMemo(
     () => allProperties.filter((item) => item.id !== propertyId && item.purpose === property?.purpose).slice(0, 3),
@@ -774,15 +950,27 @@ export default function PropertyDetailPage() {
               <p className="mt-3 text-sm text-white/66">
                 Mensagem pré-preenchida para agilizar o atendimento.
               </p>
-              <Button asChild variant="luxury" size="lg" className="mt-5 w-full">
-                <a href={whatsappLink(message)} target="_blank" rel="noreferrer">
-                  <MessageCircle size={18} /> Tenho interesse
-                </a>
+              <Button
+                variant="luxury"
+                size="lg"
+                className="mt-5 w-full"
+                onClick={() => setLeadModalOpen(true)}
+              >
+                <MessageCircle size={18} /> Tenho interesse
               </Button>
             </div>
           </div>
         </div>
       </section>
+
+      {property && (
+        <LeadCaptureModal
+          isOpen={leadModalOpen}
+          onClose={() => setLeadModalOpen(false)}
+          whatsappHref={whatsappLink(message)}
+          propertyTitle={property.title}
+        />
+      )}
 
       {/* ─── Related ─── */}
       {related.length > 0 && (
