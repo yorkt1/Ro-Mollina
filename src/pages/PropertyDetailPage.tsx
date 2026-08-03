@@ -1,4 +1,11 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, type FormEvent } from "react";
+import { createPortal } from "react-dom";
+import { Link, useParams } from "react-router-dom";
+import {
+  ArrowLeft, Bath, BedDouble, CarFront, Loader2, MapPin, Maximize,
+  MessageCircle, Share2, CheckCircle2, Sofa, Utensils, Trees,
+  Coffee, ShoppingCart, School, PillIcon, Dumbbell, Waves,
+import { useMemo, useState, useEffect, useCallback, type FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { Link, useParams } from "react-router-dom";
 import {
@@ -13,6 +20,8 @@ import PropertyCard from "@/components/PropertyCard";
 import { Button } from "@/components/ui/button";
 import { formatPropertyPrice, propertyTypeLabel, purposeLabel, whatsappLink } from "@/data/properties";
 import { useProperty, useProperties } from "@/hooks/use-properties";
+import { useSubmitWebsiteLead } from "@/hooks/use-leads";
+import { useToast } from "@/hooks/use-toast";
 import SEO from "@/components/SEO";
 import { propertyPath, propertySlug } from "@/lib/property-links";
 
@@ -406,6 +415,188 @@ const LEISURE_ICONS: Record<string, React.ElementType> = {
   "Playground": Trees,
 };
 
+/* ── Lead Capture Modal ──────────────────────── */
+function LeadCaptureModal({
+  open,
+  onClose,
+  whatsappHref,
+  propertyTitle,
+}: {
+  open: boolean;
+  onClose: () => void;
+  whatsappHref: string;
+  propertyTitle: string;
+}) {
+  const submitLead = useSubmitWebsiteLead();
+  const { toast } = useToast();
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [sent, setSent] = useState(false);
+
+  // Reset when modal reopens
+  useEffect(() => {
+    if (open) { setName(""); setPhone(""); setEmail(""); setSent(false); }
+  }, [open]);
+
+  // Prevent body scroll while open
+  useEffect(() => {
+    if (open) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!phone.trim() && !email.trim()) {
+      toast({ title: "Informe telefone ou e-mail", variant: "destructive" });
+      return;
+    }
+    try {
+      await submitLead.mutateAsync({
+        name: name.trim(),
+        phone: phone.trim(),
+        email: email.trim(),
+        message: `Interesse via site: ${propertyTitle}`,
+        interest: "venda",
+        website: typeof window !== "undefined" ? window.location.href : "",
+        marketingData: (() => {
+          if (typeof window === "undefined") return {};
+          const params = new URLSearchParams(window.location.search);
+          const data: Record<string, string> = {};
+          ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach((k) => {
+            const v = params.get(k); if (v) data[k] = v;
+          });
+          return data;
+        })(),
+      });
+      setSent(true);
+    } catch {
+      // Even on error, open WhatsApp — don't block the user
+      toast({ title: "Não foi possível salvar o cadastro", description: "Abrindo o WhatsApp mesmo assim.", variant: "destructive" });
+      setSent(true); // Allow redirect anyway
+    }
+  };
+
+  if (!open) return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9000] flex items-center justify-center p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}
+    >
+      <div
+        className="relative w-full max-w-md rounded-sm border border-border bg-card shadow-2xl"
+        style={{ animation: "fadeIn 0.18s ease" }}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between border-b border-border p-6 pb-5">
+          <div className="space-y-1">
+            <p className="text-xs uppercase tracking-[0.24em] text-accent">Atendimento</p>
+            <h2 className="text-xl text-foreground">Quase lá!</h2>
+            <p className="text-sm text-muted-foreground">Deixe seu contato e a Ro entra em seguida pelo WhatsApp.</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="ml-4 flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-border text-muted-foreground transition-colors hover:border-accent/40 hover:text-foreground"
+          >
+            <X size={15} />
+          </button>
+        </div>
+
+        {sent ? (
+          /* Success state — redirect to WhatsApp */
+          <div className="flex flex-col items-center gap-4 p-8 text-center">
+            <CheckCircle2 size={40} className="text-accent" />
+            <p className="text-lg font-medium text-foreground">Cadastro salvo!</p>
+            <p className="text-sm text-muted-foreground">Abrindo o WhatsApp para você continuar a conversa.</p>
+            <Button
+              asChild
+              variant="luxury"
+              size="lg"
+              className="w-full"
+              onClick={onClose}
+            >
+              <a href={whatsappHref} target="_blank" rel="noreferrer">
+                <MessageCircle size={18} /> Abrir WhatsApp
+              </a>
+            </Button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4 p-6">
+            <div>
+              <label htmlFor="lcm-name" className="mb-1.5 block text-sm font-medium text-foreground">
+                Nome completo <span className="text-accent">*</span>
+              </label>
+              <input
+                id="lcm-name"
+                required
+                minLength={2}
+                maxLength={120}
+                placeholder="Seu nome"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="h-11 w-full rounded-sm border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors focus:border-accent focus:ring-1 focus:ring-accent"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="lcm-phone" className="mb-1.5 block text-sm font-medium text-foreground">
+                WhatsApp / Telefone <span className="text-accent">*</span>
+              </label>
+              <input
+                id="lcm-phone"
+                type="tel"
+                required
+                maxLength={30}
+                placeholder="(48) 9 9999-9999"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="h-11 w-full rounded-sm border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors focus:border-accent focus:ring-1 focus:ring-accent"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="lcm-email" className="mb-1.5 block text-sm font-medium text-foreground">
+                E-mail <span className="text-sm text-muted-foreground font-normal">(opcional)</span>
+              </label>
+              <input
+                id="lcm-email"
+                type="email"
+                maxLength={254}
+                placeholder="seu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-11 w-full rounded-sm border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors focus:border-accent focus:ring-1 focus:ring-accent"
+              />
+            </div>
+
+            <div className="pt-2">
+              <Button
+                type="submit"
+                variant="luxury"
+                size="lg"
+                className="w-full"
+                disabled={submitLead.isPending}
+              >
+                {submitLead.isPending
+                  ? <><Loader2 size={16} className="animate-spin" /> Salvando...</>
+                  : <><MessageCircle size={18} /> Continuar para o WhatsApp</>
+                }
+              </Button>
+              <p className="mt-3 text-center text-[11px] text-muted-foreground">
+                Seus dados são usados apenas para atendimento e nunca compartilhados.
+              </p>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
 export default function PropertyDetailPage() {
   const { id, legacySlug } = useParams();
   const { data: allProperties = [] } = useProperties();
@@ -414,6 +605,7 @@ export default function PropertyDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const [leadModalOpen, setLeadModalOpen] = useState(false);
 
   const related = useMemo(
     () => allProperties.filter((item) => item.id !== propertyId && item.purpose === property?.purpose).slice(0, 3),
@@ -671,113 +863,6 @@ export default function PropertyDetailPage() {
                   </span>
                 )}
                 {property.tag && (
-                  <span className="rounded-sm bg-primary/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-foreground">
-                    {property.tag}
-                  </span>
-                )}
-              </div>
-              <h1 className="text-3xl leading-tight text-foreground md:text-4xl">{property.title}</h1>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin size={15} />
-                <span className="text-sm">{property.neighborhood} · {property.location}</span>
-              </div>
-              <p className="font-serif text-3xl text-navy">{formatPropertyPrice(property)}</p>
-              {property.area > 0 && property.price > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  Valor por m²: R$ {(property.price / property.area).toLocaleString("pt-BR", { maximumFractionDigits: 0 })}
-                </p>
-              )}
-            </div>
-
-            {/* Key specs */}
-            <div className="grid grid-cols-2 gap-3 rounded-sm border border-border bg-card p-4">
-              {property.type !== "terreno" && (
-                <>
-                  <div className="space-y-1">
-                    <BedDouble size={16} className="text-accent" />
-                    <p className="font-serif text-xl text-foreground">{property.bedrooms}</p>
-                    <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Dormitórios</p>
-                  </div>
-                  {property.suites > 0 && (
-                    <div className="space-y-1">
-                      <BedDouble size={16} className="text-accent/60" />
-                      <p className="font-serif text-xl text-foreground">{property.suites}</p>
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Suítes</p>
-                    </div>
-                  )}
-                  <div className="space-y-1">
-                    <Bath size={16} className="text-accent" />
-                    <p className="font-serif text-xl text-foreground">{property.bathrooms}</p>
-                    <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Banheiros</p>
-                  </div>
-                  <div className="space-y-1">
-                    <CarFront size={16} className="text-accent" />
-                    <p className="font-serif text-xl text-foreground">{property.parkingSpots}</p>
-                    <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Vagas</p>
-                  </div>
-                  {property.rooms != null && property.rooms > 0 && (
-                    <div className="space-y-1">
-                      <Sofa size={16} className="text-accent" />
-                      <p className="font-serif text-xl text-foreground">{property.rooms}</p>
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Salas</p>
-                    </div>
-                  )}
-                  {property.accommodates != null && property.accommodates > 0 && (
-                    <div className="space-y-1">
-                      <Maximize size={16} className="text-accent" />
-                      <p className="font-serif text-xl text-foreground">{property.accommodates}</p>
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Acomodações</p>
-                    </div>
-                  )}
-                </>
-              )}
-              <div className="space-y-1">
-                <Maximize size={16} className="text-accent" />
-                <p className="font-serif text-xl text-foreground">{property.area} m²</p>
-                <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Área</p>
-              </div>
-            </div>
-
-            {/* Detailed info table */}
-            <div className="rounded-sm border border-border bg-card p-5">
-              <p className="mb-3 text-xs uppercase tracking-[0.28em] text-accent">Ficha técnica</p>
-              <InfoRow label="Código" value={property.refCode} />
-              <InfoRow label="Zona" value={property.zone} />
-              <InfoRow label="Região" value={property.region} />
-              <InfoRow label="Bairro" value={property.neighborhood} />
-              <InfoRow label="Área Total" value={property.totalArea ? `${property.totalArea} m²` : undefined} />
-              <InfoRow label="Área Construída" value={property.builtArea ? `${property.builtArea} m²` : undefined} />
-              <InfoRow label="Área Terreno" value={property.landArea ? `${property.landArea} m²` : undefined} />
-              <InfoRow label="Terreno Frente" value={property.landFront ? `${property.landFront} m` : undefined} />
-              <InfoRow label="Terreno Fundo" value={property.landBack ? `${property.landBack} m` : undefined} />
-              <InfoRow label="Terreno Esquerda" value={property.landLeft ? `${property.landLeft} m` : undefined} />
-              <InfoRow label="Terreno Direita" value={property.landRight ? `${property.landRight} m` : undefined} />
-              <InfoRow label="Mobiliado" value={property.furnished} />
-              <InfoRow label="Permuta" value={property.swap} />
-              <InfoRow label="Aceita Financiamento" value={property.acceptsFinancing} />
-              <InfoRow label="Tipo de Contrato" value={property.contractType} />
-              <InfoRow label="IPTU (periodicidade)" value={property.iptuPeriod} />
-            </div>
-
-            {/* Share */}
-            <button
-              onClick={handleShare}
-              className="flex w-full items-center justify-center gap-2 rounded-sm border border-border bg-secondary/30 py-2.5 text-xs uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:border-accent/40 hover:text-foreground"
-            >
-              <Share2 size={14} /> Compartilhar imóvel
-            </button>
-
-            {/* CTA */}
-            <div className="rounded-sm border border-border bg-[hsl(var(--navy-deep))] p-7 text-white">
-              <p className="text-xs uppercase tracking-[0.28em] text-accent">Atendimento</p>
-              <h2 className="mt-3 text-2xl leading-tight text-white">Fale com a Ro Molina</h2>
-              <p className="mt-3 text-sm text-white/66">
-                Mensagem pré-preenchida para agilizar o atendimento.
-              </p>
-              <Button asChild variant="luxury" size="lg" className="mt-5 w-full">
-                <a href={whatsappLink(message)} target="_blank" rel="noreferrer">
-                  <MessageCircle size={18} /> Tenho interesse
-                </a>
               </Button>
             </div>
           </div>
