@@ -32,12 +32,11 @@ export default function PropertyCard({ property }: { property: Property }) {
           onError={() => setImageLoaded(true)}
         />
 
+        {/* Muitas fotos já vêm com arte publicitária embutida — só o essencial
+            fica sobre a imagem; tipo e tag livre descem para o corpo do card. */}
         <div className="absolute left-4 top-4 flex flex-wrap gap-2">
-          <span className="rounded-sm bg-accent px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-navy-deep">
+          <span className="rounded-sm bg-accent px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-navy-deep shadow-md">
             {purposeLabel(property.purpose)}
-          </span>
-          <span className="rounded-sm bg-primary/78 px-3 py-1.5 text-xs font-medium uppercase tracking-[0.18em] text-white backdrop-blur-sm">
-            {propertyTypeLabel(property.type)}
           </span>
           {property.opportunity && (
             <span className="inline-flex items-center gap-1 rounded-sm bg-emerald-600 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white shadow-md">
@@ -45,15 +44,20 @@ export default function PropertyCard({ property }: { property: Property }) {
             </span>
           )}
         </div>
-
-        {property.tag && (
-          <span className="absolute bottom-4 left-4 inline-flex items-center gap-1 rounded-sm bg-primary px-3 py-1.5 text-xs font-semibold text-white shadow-md">
-            <Tag size={14} /> {property.tag}
-          </span>
-        )}
       </div>
 
       <div className="space-y-3 p-5">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded-sm bg-secondary px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-navy">
+            {propertyTypeLabel(property.type)}
+          </span>
+          {property.tag && (
+            <span className="inline-flex items-center gap-1 rounded-sm border border-accent/40 bg-accent/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-navy">
+              <Tag size={12} className="shrink-0" /> {property.tag}
+            </span>
+          )}
+        </div>
+
         <div className="space-y-1.5">
           <p className="text-base font-serif font-semibold leading-snug text-foreground line-clamp-2">
             {property.title}

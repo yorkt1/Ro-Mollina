@@ -50,7 +50,7 @@ function Reveal({
 /* ── Credential badge ── */
 function Badge({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
   return (
-    <div className="flex items-center gap-2.5 rounded-sm border border-accent/30 bg-accent/8 px-4 py-2.5">
+    <div className="flex items-center gap-2.5 rounded-sm border border-accent/30 bg-accent/10 px-4 py-2.5">
       <Icon size={15} className="shrink-0 text-accent" />
       <span className="text-sm font-medium text-foreground">{label}</span>
     </div>
@@ -131,7 +131,7 @@ export default function AboutPage() {
         />
         {/* Accent gradient blob */}
         <div className="pointer-events-none absolute -top-32 -right-32 h-96 w-96 rounded-full bg-accent/10 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-0 -left-20 h-64 w-64 rounded-full bg-accent/8 blur-2xl" />
+        <div className="pointer-events-none absolute bottom-0 -left-20 h-64 w-64 rounded-full bg-accent/10 blur-2xl" />
 
         <div className="container relative px-6">
           <div className="grid gap-12 lg:grid-cols-[1fr_360px] lg:items-center">
@@ -409,7 +409,7 @@ export default function AboutPage() {
                   (city) => (
                     <span
                       key={city}
-                      className="flex items-center gap-1.5 rounded-sm border border-white/15 bg-white/8 px-3 py-1.5 text-sm text-white/80"
+                      className="flex items-center gap-1.5 rounded-sm border border-white/15 bg-white/10 px-3 py-1.5 text-sm text-white/80"
                     >
                       <MapPin size={12} className="text-accent" />
                       {city}
@@ -422,7 +422,7 @@ export default function AboutPage() {
             {/* Contact card */}
             <Reveal
               delay={100}
-              className="w-full rounded-sm border border-white/10 bg-white/6 p-6 backdrop-blur-sm lg:w-80"
+              className="w-full rounded-sm border border-white/10 bg-white/5 p-6 backdrop-blur-sm lg:w-80"
             >
               <p className="text-xs uppercase tracking-[0.24em] text-accent">Contato direto</p>
               <h3 className="mt-3 text-xl text-white">Fale com Ro Molina</h3>

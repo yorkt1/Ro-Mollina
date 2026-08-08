@@ -7,19 +7,33 @@ import { propertyTypeLabel } from "@/data/properties";
 import { usePropertyTypes } from "@/hooks/use-property-types";
 import { useDestinationLinks } from "@/hooks/use-destination-links";
 
-/* ── Dropdown config ─────────────────────────── */
-const buyItems = [
-  { label: "Apartamentos", to: "/comprar?tipo=apartamento", icon: Building2 },
-  { label: "Casas",        to: "/comprar?tipo=casa",        icon: Home       },
-  { label: "Coberturas",   to: "/comprar?tipo=cobertura",   icon: Waves      },
-  { label: "Terrenos",     to: "/comprar?tipo=terreno",     icon: TreePine   },
-];
+/* ── Menu items ───────────────────────────────── */
+type MenuItem = { label: string; to: string; icon: React.ElementType };
 
-const rentItems = [
-  { label: "Apartamentos", to: "/alugar?tipo=apartamento",  icon: Building2 },
-  { label: "Casas",        to: "/alugar?tipo=casa",         icon: Home       },
-  { label: "Coberturas",   to: "/alugar?tipo=cobertura",    icon: Waves      },
-];
+const normalizeMenuLabel = (label: string) =>
+  label
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+
+/**
+ * Tipos de imóvel e links de destino se sobrepõem: "casa", "casas" e um link
+ * custom viram todos "Casas" no menu, com paths diferentes. Mantém a primeira
+ * ocorrência de cada rótulo e de cada destino.
+ */
+function dedupeMenuItems(items: MenuItem[]): MenuItem[] {
+  const seenLabels = new Set<string>();
+  const seenPaths = new Set<string>();
+
+  return items.filter((item) => {
+    const label = normalizeMenuLabel(item.label);
+    if (seenLabels.has(label) || seenPaths.has(item.to)) return false;
+    seenLabels.add(label);
+    seenPaths.add(item.to);
+    return true;
+  });
+}
 
 /* ── NavDropdown ─────────────────────────────── */
 function NavDropdown({
@@ -133,24 +147,19 @@ export default function Header() {
     return propertyTypeLabel(name);
   };
 
-  // Derive menu items directly from Property Types
-  const autoBuyItems = [
-    { label: t.viewAll, to: "/comprar", icon: Home },
-    ...propertyTypes.map(pt => ({
-      label: getTranslatedTypeName(pt.name),
-      to: `/comprar/${pt.name}`,
-      icon: getLinkIcon(pt.name)
-    }))
-  ];
+  // Derive menu items directly from Property Types.
+  // O "Ver todos" é renderizado à parte (dropdown e drawer), então não entra aqui.
+  const autoBuyItems = propertyTypes.map(pt => ({
+    label: getTranslatedTypeName(pt.name),
+    to: `/comprar/${pt.name}`,
+    icon: getLinkIcon(pt.name)
+  }));
 
-  const autoRentItems = [
-    { label: t.viewAll, to: "/alugar", icon: Building2 },
-    ...propertyTypes.map(pt => ({
-      label: getTranslatedTypeName(pt.name),
-      to: `/alugar/${pt.name}`,
-      icon: getLinkIcon(pt.name)
-    }))
-  ];
+  const autoRentItems = propertyTypes.map(pt => ({
+    label: getTranslatedTypeName(pt.name),
+    to: `/alugar/${pt.name}`,
+    icon: getLinkIcon(pt.name)
+  }));
 
   // Add custom links from database to dropdowns or main menu
   const customBuyItems = destLinks
@@ -176,8 +185,8 @@ export default function Header() {
     !d.name.toLowerCase().includes("condomínio")
   );
 
-  const finalBuyItems = [...autoBuyItems, ...customBuyItems];
-  const finalRentItems = [...autoRentItems, ...customRentItems];
+  const finalBuyItems = dedupeMenuItems([...autoBuyItems, ...customBuyItems]);
+  const finalRentItems = dedupeMenuItems([...autoRentItems, ...customRentItems]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 36);
@@ -186,6 +195,12 @@ export default function Header() {
   }, []);
 
   useEffect(() => setOpen(false), [location.pathname]);
+
+  // Sinaliza o menu aberto para o botão flutuante do WhatsApp sair da frente.
+  useEffect(() => {
+    document.documentElement.classList.toggle("mobile-menu-open", open);
+    return () => document.documentElement.classList.remove("mobile-menu-open");
+  }, [open]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -202,9 +217,11 @@ export default function Header() {
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? "bg-white/95 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.08)] border-b border-border"
-          : "bg-white/70 backdrop-blur-sm"
+        open
+          ? "bg-white shadow-[0_4px_20px_rgba(0,0,0,0.08)] border-b border-border"
+          : scrolled
+            ? "bg-white/95 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.08)] border-b border-border"
+            : "bg-white/70 backdrop-blur-sm"
       }`}
     >
       <nav className="container flex items-center justify-between px-6 py-4 lg:py-5">
@@ -361,7 +378,7 @@ export default function Header() {
 
       {/* ── Mobile drawer ── */}
       {open && (
-        <div className="border-t border-border bg-white/98 px-6 py-6 backdrop-blur-md lg:hidden">
+        <div className="max-h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain border-t border-border bg-white px-6 py-6 lg:hidden">
           <div className="flex flex-col gap-1">
             <Link
               to="/"
@@ -378,6 +395,13 @@ export default function Header() {
                 <ChevronDown size={14} className="transition-transform group-open:rotate-180" />
               </summary>
               <div className="mt-1 flex flex-col gap-0.5 pl-4">
+                <Link
+                  to="/comprar"
+                  className="py-2 text-[13px] uppercase tracking-[0.14em] text-accent hover:text-gold-light"
+                  onClick={() => setOpen(false)}
+                >
+                  {t.viewAll}
+                </Link>
                 {finalBuyItems.map((item) => (
                   <Link
                     key={item.to}
@@ -398,6 +422,13 @@ export default function Header() {
                 <ChevronDown size={14} className="transition-transform group-open:rotate-180" />
               </summary>
               <div className="mt-1 flex flex-col gap-0.5 pl-4">
+                <Link
+                  to="/alugar"
+                  className="py-2 text-[13px] uppercase tracking-[0.14em] text-accent hover:text-gold-light"
+                  onClick={() => setOpen(false)}
+                >
+                  {t.viewAll}
+                </Link>
                 {finalRentItems.map((item) => (
                   <Link
                     key={item.to}

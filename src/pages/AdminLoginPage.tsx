@@ -53,9 +53,9 @@ export default function AdminLoginPage() {
               "CRUD completo de imóveis com upload de fotos",
               "Autenticação segura com Supabase",
             ].map((item) => (
-              <div key={item} className="flex items-center gap-3 rounded-sm border border-white/10 bg-white/6 px-4 py-3 backdrop-blur-sm">
+              <div key={item} className="flex items-center gap-3 rounded-sm border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm">
                 <ShieldCheck size={18} className="text-accent" />
-                <span className="text-sm text-white/74">{item}</span>
+                <span className="text-sm text-white/75">{item}</span>
               </div>
             ))}
           </div>

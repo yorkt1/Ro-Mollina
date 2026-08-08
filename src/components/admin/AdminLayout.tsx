@@ -95,7 +95,7 @@ export default function AdminLayout() {
                   `flex items-center gap-3 rounded-sm px-4 py-3 text-sm transition-colors ${
                     isActive
                       ? "bg-white/10 text-white"
-                      : "text-white/65 hover:bg-white/6 hover:text-white"
+                      : "text-white/65 hover:bg-white/5 hover:text-white"
                   }`
                 }
               >
@@ -113,7 +113,7 @@ export default function AdminLayout() {
                   `flex items-center gap-3 rounded-sm px-4 py-3 text-sm transition-colors ${
                     isActive
                       ? "bg-white/10 text-white"
-                      : "text-white/65 hover:bg-white/6 hover:text-white"
+                      : "text-white/65 hover:bg-white/5 hover:text-white"
                   }`
                 }
               >

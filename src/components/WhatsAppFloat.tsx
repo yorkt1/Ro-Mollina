@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { whatsappLink } from "@/data/properties";
 import { trackWhatsAppClick } from "@/lib/analytics";
@@ -5,11 +6,111 @@ import { trackWhatsAppClick } from "@/lib/analytics";
 const WHATSAPP_URL = whatsappLink(
   "Olá! Vim pelo site e gostaria de mais informações sobre os imóveis.",
 );
+
+/**
+ * Some o botão enquanto uma seção marcada com `data-wa-hide` estiver na tela.
+ * São as áreas que já têm o próprio CTA (negocie seu imóvel, contato, rodapé) —
+ * é onde ele cobria textos e botões.
+ */
+function useNearCtaZone() {
+  const [nearCta, setNearCta] = useState(false);
+
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
+
+    const visible = new Set<Element>();
+    const observed = new Set<Element>();
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) visible.add(entry.target);
+          else visible.delete(entry.target);
+        }
+        setNearCta(visible.size > 0);
+      },
+      { threshold: 0 },
+    );
+
+    const sync = () => {
+      document.querySelectorAll("[data-wa-hide]").forEach((zone) => {
+        if (observed.has(zone)) return;
+        observed.add(zone);
+        observer.observe(zone);
+      });
+
+      for (const zone of observed) {
+        if (zone.isConnected) continue;
+        observed.delete(zone);
+        visible.delete(zone);
+        observer.unobserve(zone);
+      }
+
+      setNearCta(visible.size > 0);
+    };
+
+    sync();
+
+    // As seções chegam depois (rotas lazy, dados do Supabase), então acompanha o DOM.
+    let scheduled = false;
+    const mutationObserver = new MutationObserver(() => {
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(() => {
+        scheduled = false;
+        sync();
+      });
+    });
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      mutationObserver.disconnect();
+      observer.disconnect();
+    };
+  }, []);
+
+  return nearCta;
+}
+
+/** Recolhe ao descer a página e devolve ao subir, para não tampar o conteúdo. */
+function useHiddenOnScrollDown(pathname: string) {
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => setHidden(false), [pathname]);
+
+  useEffect(() => {
+    let lastY = window.scrollY;
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const currentY = window.scrollY;
+        const delta = currentY - lastY;
+        if (Math.abs(delta) < 12) return;
+        lastY = currentY;
+        setHidden(delta > 0 && currentY > 260);
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return hidden;
+}
+
 export default function WhatsAppFloat() {
   const { pathname } = useLocation();
+  const nearCta = useNearCtaZone();
+  const hiddenOnScrollDown = useHiddenOnScrollDown(pathname);
   const hiddenOnAdmin = pathname.startsWith("/admin");
 
   if (hiddenOnAdmin) return null;
+
+  const hidden = nearCta || hiddenOnScrollDown;
 
   return (
     <>
@@ -29,6 +130,13 @@ export default function WhatsAppFloat() {
           flex-direction: column;
           align-items: flex-end;
           gap: 10px;
+          transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+        .wa-float-wrap.is-hidden,
+        html.mobile-menu-open .wa-float-wrap {
+          opacity: 0;
+          transform: translateY(14px) scale(0.9);
+          pointer-events: none;
         }
         .wa-float-button {
           width: 56px;
@@ -49,19 +157,23 @@ export default function WhatsAppFloat() {
           }
         }
         @media (prefers-reduced-motion: reduce) {
+          .wa-float-wrap {
+            transition: none;
+          }
           .wa-float-button {
             animation: none;
           }
         }
       `}</style>
 
-      <div className="wa-float-wrap">
+      <div className={`wa-float-wrap ${hidden ? "is-hidden" : ""}`} aria-hidden={hidden}>
         <a
           href={WHATSAPP_URL}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Falar com Ro Molina pelo WhatsApp"
           data-gtm-link="whatsapp_float"
+          tabIndex={hidden ? -1 : undefined}
           onClick={() => trackWhatsAppClick("floating_button")}
           className="wa-float-button flex shrink-0 items-center justify-center rounded-full bg-[#25D366] transition-transform duration-200 hover:scale-110"
         >

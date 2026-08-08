@@ -3,7 +3,10 @@ import SocialIcons from "@/components/SocialIcons";
 
 export default function Footer() {
   return (
-    <footer className="bg-[hsl(var(--navy-deep))] py-14 text-white/90">
+    <footer
+      data-wa-hide
+      className="bg-[hsl(var(--navy-deep))] pb-28 pt-14 text-white/90 sm:pb-14"
+    >
       <div className="container px-6">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_auto]">
           <div className="space-y-4">

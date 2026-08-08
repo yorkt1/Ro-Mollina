@@ -20,10 +20,26 @@ import { getHighlightStorefrontLink } from "@/lib/storefront-filters";
 import { cloudinaryUrl } from "@/lib/cloudinary";
 import SEO from "@/components/SEO";
 
-function RevealSection({ children, className = "", id }: { children: ReactNode; className?: string; id?: string }) {
+function RevealSection({
+  children,
+  className = "",
+  id,
+  hideFloatingCta = false,
+}: {
+  children: ReactNode;
+  className?: string;
+  id?: string;
+  /** Seções que já têm o próprio CTA — o botão flutuante some enquanto elas estão na tela. */
+  hideFloatingCta?: boolean;
+}) {
   const { ref, revealed } = useScrollReveal<HTMLElement>();
   return (
-    <section ref={ref} id={id} className={`section-reveal ${revealed ? "revealed" : ""} ${className}`}>
+    <section
+      ref={ref}
+      id={id}
+      data-wa-hide={hideFloatingCta ? "" : undefined}
+      className={`section-reveal ${revealed ? "revealed" : ""} ${className}`}
+    >
       {children}
     </section>
   );
@@ -161,7 +177,7 @@ export default function HomePage() {
 
       {/* ─── Lifestyle Categories ─── */}
       {displayHighlights.length > 0 && (
-        <RevealSection className="py-20 lg:py-28">
+        <RevealSection className="py-14 lg:py-24">
           <div className="container space-y-8 px-6">
             <SectionHeading
               eyebrow="Categorias"
@@ -186,7 +202,7 @@ export default function HomePage() {
       )}
 
       {/* Property lead capture CTA */}
-      <RevealSection className="bg-[hsl(var(--navy-deep))] py-14 text-white lg:py-16">
+      <RevealSection className="bg-[hsl(var(--navy-deep))] py-14 text-white lg:py-16" hideFloatingCta>
         <div className="container px-6">
           <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
             <div className="space-y-4">
@@ -220,7 +236,7 @@ export default function HomePage() {
 
       {/* Vitrine de oportunidades */}
       {!isLoading && opportunities.length > 0 && (
-        <RevealSection className="bg-[hsl(var(--navy-deep))] py-20 lg:py-28">
+        <RevealSection className="bg-[hsl(var(--navy-deep))] py-14 lg:py-24">
           <div className="container space-y-10 px-6">
             <SectionHeading
               eyebrow="Oportunidades"
@@ -243,7 +259,7 @@ export default function HomePage() {
 
       {/* Imóveis em destaque para venda */}
       {!isLoading && saleProperties.length > 0 && (
-        <RevealSection className="py-20 lg:py-28 bg-secondary/45">
+        <RevealSection className="py-14 lg:py-24 bg-secondary/45">
           <div className="container space-y-10 px-6">
             <SectionHeading
               eyebrow="Imóveis à Venda"
@@ -265,7 +281,7 @@ export default function HomePage() {
 
       {/* ─── Rental Highlights ─── */}
       {!isLoading && rentProperties.length > 0 && (
-        <RevealSection className="py-20 lg:py-28">
+        <RevealSection className="py-14 lg:py-24">
           <div className="container space-y-10 px-6">
             <SectionHeading
               eyebrow="Imóveis para Locação"
@@ -287,7 +303,7 @@ export default function HomePage() {
 
       {/* ─── Exclusividades ─── */}
       {!isLoading && exclusives.length > 0 && (
-        <RevealSection className="py-20 lg:py-28 bg-[hsl(var(--navy-deep))]">
+        <RevealSection className="py-14 lg:py-24 bg-[hsl(var(--navy-deep))]">
           <div className="container space-y-10 px-6">
             <SectionHeading
               eyebrow="Exclusividades"
@@ -302,7 +318,7 @@ export default function HomePage() {
       )}
 
       {/* ─── YouTube Section — só aparece quando há vídeos cadastrados no Supabase ─── */}
-      {displayVideos.length > 0 && <RevealSection className="py-20 lg:py-28 bg-secondary/45">
+      {displayVideos.length > 0 && <RevealSection className="py-14 lg:py-24 bg-secondary/45">
         <div className="container space-y-10 px-6">
           <SectionHeading
             eyebrow="Molina no YouTube"
@@ -366,7 +382,7 @@ export default function HomePage() {
       </RevealSection>}
 
       {/* ─── About ─── */}
-      <RevealSection className="py-20 lg:py-28" id="sobre">
+      <RevealSection className="py-14 lg:py-24" id="sobre">
         <div className="container grid gap-12 px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <div className="relative mx-auto w-full max-w-sm">
             <div className="absolute -inset-4 rounded-sm bg-accent/10" />
@@ -398,7 +414,7 @@ export default function HomePage() {
       </RevealSection>
 
       {/* ─── Contact CTA ─── */}
-      <RevealSection className="py-20 lg:py-28 bg-secondary/45" id="contato">
+      <RevealSection className="py-14 lg:py-24 bg-secondary/45" id="contato" hideFloatingCta>
         <div className="container px-6">
           <div className="grid gap-8 rounded-sm border border-border bg-card p-8 lg:grid-cols-[1fr_auto] lg:items-center lg:p-12">
             <div className="space-y-4">

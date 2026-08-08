@@ -212,7 +212,7 @@ export default function PropertiesPage({
       </section>
 
       {/* Sticky filter bar */}
-      <section className="sticky top-0 z-40 border-b border-border bg-card/96 py-3 backdrop-blur-md sm:py-4">
+      <section className="sticky top-0 z-40 border-b border-border bg-card/95 py-3 backdrop-blur-md sm:py-4">
         <div className="container px-4 sm:px-6">
           {/* Search + Purpose row */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
