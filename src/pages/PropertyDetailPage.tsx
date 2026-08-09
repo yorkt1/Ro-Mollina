@@ -27,16 +27,23 @@ function extractPropertyId(id: string | undefined, legacySlug: string | undefine
   }
 
   if (/^[0-9]+$/.test(id)) {
+    // Mesma ordem de desempate da /api/imovel: com slug na URL, ele manda.
+    // O número já foi posicional, então URLs antigas trazem um número que hoje
+    // pertence a outro imóvel — só o slug identifica o imóvel de verdade.
     const byShortId = allProperties.find((item) => String(item.shortId) === id);
-    if (byShortId) return byShortId.id;
 
-    // Slug resgata links antigos, de quando o número da URL era posicional.
+    if (byShortId && (!legacySlug || propertySlug(byShortId as any) === legacySlug)) {
+      return byShortId.id;
+    }
+
     if (legacySlug) {
       const matched = allProperties.find(
         (item) => propertySlug(item as any) === legacySlug
       );
       if (matched) return matched.id;
     }
+
+    if (byShortId) return byShortId.id;
 
     // Sem correspondência: devolver o número cru faria o Supabase receber "11"
     // numa coluna uuid e responder com erro. Melhor tratar como não encontrado.

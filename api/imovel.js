@@ -148,14 +148,18 @@ async function fetchByShortId(shortId) {
  * Resolve o imóvel a partir do segmento da URL.
  * Aceita: UUID (direto), short_id numérico ou slug legado com UUID no final.
  *
- * Ordem de prioridade:
- * 1. UUID direto → busca exata por id
- * 2. short_id → busca exata pela coluna estável
- * 3. Slug da URL → match exato (resgata links antigos, de quando o número
- *    era posicional e mudava a cada imóvel novo)
+ * O caso delicado é o número + slug. Até a migração do short_id o número era
+ * posicional, então existem URLs indexadas cujo número hoje pertence a OUTRO
+ * imóvel — por exemplo /imovel/11/sobrado-a-venda-vargem-do-bom-jesus, em que
+ * o 11 virou uma casa térrea e o sobrado passou a ser o 16. Resolver pelo
+ * número sozinho mandaria o visitante (e o 301 do Google) para o imóvel errado.
  *
- * O índice posicional NÃO é mais usado como fallback: era ele que fazia
- * /imovel/11/... apontar para um imóvel diferente a cada cadastro novo.
+ * Por isso o slug desempata:
+ * 1. UUID → busca exata por id
+ * 2. Número + slug que CONFEREM → é a URL canônica, usa o número
+ *    (importante quando dois imóveis geram o mesmo slug: o número separa)
+ * 3. Slug que não confere com o número → a URL é antiga; vale o slug
+ * 4. Slug que não casa com nada (título editado) → volta para o número
  */
 async function fetchProperty(rawId, rawSlug) {
   const id = String(rawId ?? "").trim();
@@ -174,22 +178,39 @@ async function fetchProperty(rawId, rawSlug) {
   }
 
   if (/^\d+$/.test(id)) {
-    // 2. short_id
     const { supported, row } = await fetchByShortId(id);
-    if (row) return row;
+    const slugStr = String(rawSlug ?? "").trim();
+
+    // Número e slug conferem: URL canônica, nada a decidir.
+    if (row && slugStr && propertySlug(row) === slugStr) return row;
+
+    // Sem slug na URL o número é a única pista disponível.
+    if (row && !slugStr) return row;
 
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/properties?select=*&order=created_at.desc`,
       { headers: supabaseHeaders },
     );
-    if (!res.ok) return null;
+    if (!res.ok) return row ?? null;
     const rows = await res.json();
 
-    // 3. Slug — resgata URLs cujo número ficou defasado
-    if (rawSlug) {
-      const slugStr = String(rawSlug).trim();
+    // Número defasado: o slug diz qual imóvel a URL sempre representou.
+    if (slugStr) {
       const matched = rows.find((item) => propertySlug(item) === slugStr);
       if (matched) return matched;
+    }
+
+    // O slug não bate com nenhum imóvel. Duas causas possíveis, e elas pedem
+    // respostas opostas:
+    //   a) o título foi editado no admin → a URL antiga é do imóvel do número,
+    //      e redirecionar preserva o que o Google já acumulou nela;
+    //   b) é uma URL pré-migração, cujo número passou para outro imóvel →
+    //      redirecionar mandaria o visitante para um imóvel sem relação.
+    // O bairro desempata: ele é a segunda metade do slug e quase nunca muda.
+    if (row) {
+      const bairro = normalizeText(row.neighborhood);
+      if (bairro && slugStr.endsWith(bairro)) return row;
+      return null; // ambíguo demais para redirecionar — melhor um 404 honesto
     }
 
     // Só enquanto a coluna short_id não existir: o número ainda é posicional.
