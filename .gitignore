@@ -3,6 +3,9 @@
 .env.local
 .env.*.local
 
+# Dumps do banco de produção (nunca commitar!)
+backups
+
 # Logs
 logs
 *.log
