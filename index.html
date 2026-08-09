@@ -47,7 +47,9 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <!-- Indexação -->
-    <meta name="robots" content="index,follow" />
+    <!-- Sem meta robots estática aqui: "index,follow" já é o padrão do Google e,
+         por não ser gerenciada pelo react-helmet-async, ela permanecia no DOM
+         convivendo com o "noindex" que /admin/login e a página 404 emitem. -->
     <meta name="author" content="Ro Molina" />
     <meta name="theme-color" content="#1a1a2e" />
 

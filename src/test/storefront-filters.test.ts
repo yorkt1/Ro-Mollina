@@ -4,6 +4,7 @@ import {
   propertyMatchesShowcase,
   propertyTypeMatchesCategory,
   propertyTypeMatchesFilter,
+  typeSlug,
 } from "@/lib/storefront-filters";
 import { getSiteDestinationOptions } from "@/lib/site-destinations";
 
@@ -39,6 +40,20 @@ describe("storefront property filters", () => {
     expect(propertyTypeMatchesFilter("terreno em condomínio", "terreno")).toBe(true);
     expect(propertyTypeMatchesFilter("terreno loteamento", "terreno")).toBe(true);
     expect(propertyTypeMatchesFilter("casa", "terreno")).toBe(false);
+  });
+
+  it("turns admin-typed property type names into clean URL segments", () => {
+    expect(typeSlug("Casa & Apartamento")).toBe("casa-apartamento");
+    expect(typeSlug("Sítio")).toBe("sitio");
+    expect(typeSlug("Terreno em Condomínio")).toBe("terreno-em-condominio");
+    expect(typeSlug("predio comercial")).toBe("predio-comercial");
+  });
+
+  it("matches a route slug back to the property type stored in the database", () => {
+    expect(propertyTypeMatchesFilter("Casa & Apartamento", "casa-apartamento")).toBe(true);
+    expect(propertyTypeMatchesFilter("Sítio", "sitio")).toBe(true);
+    expect(propertyTypeMatchesFilter("terreno em condomínio", "terreno")).toBe(true);
+    expect(propertyTypeMatchesFilter("casa", "casa-apartamento")).toBe(false);
   });
 
   it("limits the Condomínios category to condominium property types", () => {

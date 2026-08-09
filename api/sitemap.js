@@ -94,7 +94,7 @@ export default async function handler(req, res) {
   let properties = [];
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/properties?select=id,title,neighborhood,images,created_at&order=created_at.desc`,
+      `${SUPABASE_URL}/rest/v1/properties?select=id,short_id,title,neighborhood,images,created_at&order=created_at.desc`,
       {
         headers: {
           apikey: SUPABASE_ANON_KEY,
@@ -113,10 +113,12 @@ export default async function handler(req, res) {
   // Monta as entradas das páginas estáticas
   const staticEntries = STATIC_URLS.map((u) => urlEntry({ ...u }));
 
-  // Monta as entradas dos imóveis individuais
-  // shortId = index + 1 (mesmo que o front-end: .map((db, index) => ({ shortId: index + 1 })))
+  // Monta as entradas dos imóveis individuais.
+  // O id da URL vem da coluna short_id — estável e igual à canônica que a
+  // /api/imovel declara. O `index + 1` só cobre o intervalo antes da migração
+  // 20260809120000_stable_property_short_id.sql, onde o número era posicional.
   const propertyEntries = properties.map((property, index) => {
-    const shortId = index + 1;
+    const shortId = property.short_id ?? index + 1;
     const slug = propertySlug(property);
     const loc = `${SITE_URL}/imovel/${shortId}/${slug}`;
     const lastmod = w3cDate(property.created_at);

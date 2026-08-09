@@ -27,13 +27,20 @@ function extractPropertyId(id: string | undefined, legacySlug: string | undefine
   }
 
   if (/^[0-9]+$/.test(id)) {
+    const byShortId = allProperties.find((item) => String(item.shortId) === id);
+    if (byShortId) return byShortId.id;
+
+    // Slug resgata links antigos, de quando o número da URL era posicional.
     if (legacySlug) {
       const matched = allProperties.find(
         (item) => propertySlug(item as any) === legacySlug
       );
       if (matched) return matched.id;
     }
-    return allProperties.find((item) => String(item.shortId) === id)?.id ?? id;
+
+    // Sem correspondência: devolver o número cru faria o Supabase receber "11"
+    // numa coluna uuid e responder com erro. Melhor tratar como não encontrado.
+    return undefined;
   }
 
   if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
@@ -583,9 +590,12 @@ function LeadCaptureModal({
 
 export default function PropertyDetailPage() {
   const { id, legacySlug } = useParams();
-  const { data: allProperties = [] } = useProperties();
+  const { data: allProperties = [], isLoading: listLoading } = useProperties();
   const propertyId = extractPropertyId(id, legacySlug, allProperties);
-  const { data: property, isLoading } = useProperty(propertyId);
+  const { data: property, isLoading: detailLoading } = useProperty(propertyId);
+  // Um id numérico só vira UUID depois que a lista chega — até lá, seguir para
+  // o "não encontrado" mostraria um flash de 404 numa página que existe.
+  const isLoading = listLoading || detailLoading;
   const [selectedImage, setSelectedImage] = useState(0);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
@@ -611,6 +621,7 @@ export default function PropertyDetailPage() {
   if (!property) {
     return (
       <div className="min-h-screen bg-background">
+        <SEO title="Imóvel não encontrado" noIndex />
         <Header />
         <div className="flex min-h-[70vh] items-center justify-center px-6 pt-24">
           <div className="space-y-4 text-center">
@@ -643,8 +654,10 @@ export default function PropertyDetailPage() {
     `${property.bathrooms} banheiro${property.bathrooms !== 1 ? "s" : ""}, ${property.area} m². ` +
     `${property.neighborhood}, Florianópolis/SC. CRECI-SC 72089F.`;
 
-  const siteUrl = (import.meta.env.VITE_SITE_URL as string | undefined) ?? "https://romolinaimoveis.com.br";
-  const propertyShortId = allProperties.find((item) => item.id === property.id)?.shortId;
+  // Mesmo host padrão do SEO.tsx e da /api/imovel — canônica e JSON-LD precisam
+  // apontar para a mesma origem, senão o Google vê duas URLs para o mesmo imóvel.
+  const siteUrl = (import.meta.env.VITE_SITE_URL as string | undefined) ?? "https://www.romolinaimoveis.com.br";
+  const propertyShortId = property.shortId ?? allProperties.find((item) => item.id === property.id)?.shortId;
 
   const propertyJsonLd = {
     "@type": "Apartment",

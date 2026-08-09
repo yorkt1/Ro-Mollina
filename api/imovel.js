@@ -130,14 +130,32 @@ function ogImageUrl(raw) {
 }
 
 /**
+ * Busca por short_id (coluna estável no banco).
+ * `supported: false` significa que a coluna ainda não existe — só acontece
+ * antes da migração 20260809120000_stable_property_short_id.sql.
+ */
+async function fetchByShortId(shortId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/properties?short_id=eq.${shortId}&select=*`,
+    { headers: supabaseHeaders },
+  );
+  if (!res.ok) return { supported: false, row: null };
+  const rows = await res.json();
+  return { supported: true, row: rows[0] ?? null };
+}
+
+/**
  * Resolve o imóvel a partir do segmento da URL.
- * Aceita: UUID (direto), número (shortId = posição em created_at desc) ou
- * slug legado que contenha um UUID no final.
+ * Aceita: UUID (direto), short_id numérico ou slug legado com UUID no final.
  *
- * Estratégia de lookup (ordem de prioridade):
- * 1. UUID direto → busca exata por ID
- * 2. Slug na URL → match exato de slug (mais confiável que índice)
- * 3. shortId numérico → índice na lista ordenada por created_at desc (fallback)
+ * Ordem de prioridade:
+ * 1. UUID direto → busca exata por id
+ * 2. short_id → busca exata pela coluna estável
+ * 3. Slug da URL → match exato (resgata links antigos, de quando o número
+ *    era posicional e mudava a cada imóvel novo)
+ *
+ * O índice posicional NÃO é mais usado como fallback: era ele que fazia
+ * /imovel/11/... apontar para um imóvel diferente a cada cadastro novo.
  */
 async function fetchProperty(rawId, rawSlug) {
   const id = String(rawId ?? "").trim();
@@ -156,7 +174,10 @@ async function fetchProperty(rawId, rawSlug) {
   }
 
   if (/^\d+$/.test(id)) {
-    // Busca todos uma única vez (necessário para ambos os casos: slug e índice)
+    // 2. short_id
+    const { supported, row } = await fetchByShortId(id);
+    if (row) return row;
+
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/properties?select=*&order=created_at.desc`,
       { headers: supabaseHeaders },
@@ -164,36 +185,48 @@ async function fetchProperty(rawId, rawSlug) {
     if (!res.ok) return null;
     const rows = await res.json();
 
-    // 2. Slug é a fonte mais confiável — usa como lookup primário
+    // 3. Slug — resgata URLs cujo número ficou defasado
     if (rawSlug) {
       const slugStr = String(rawSlug).trim();
       const matched = rows.find((item) => propertySlug(item) === slugStr);
-      // Se o slug bateu E o índice também confere, ótimo.
-      // Se só o slug bateu (índice diferente), preferimos o slug — mais preciso.
       if (matched) return matched;
-      // Se o slug não bateu (raro: título/bairro mudou), cai no índice abaixo.
     }
 
-    // 3. Fallback: índice (mesmo que o React usa via shortId = index + 1)
-    const idx = Number(id) - 1;
-    return rows[idx] ?? null;
+    // Só enquanto a coluna short_id não existir: o número ainda é posicional.
+    return supported ? null : (rows[Number(id) - 1] ?? null);
   }
 
   return null;
 }
 
-/** Monta título, descrição e imagem do preview a partir do imóvel. */
-function buildMeta(property, host, rawId, rawSlug) {
-  if (!property) {
-    return {
-      title: `${SITE_NAME} — Imóveis de Alto Padrão em Florianópolis`,
-      description: DEFAULT_DESCRIPTION,
-      image: DEFAULT_IMAGE,
-      imageSized: false,
-      url: `https://${host}`,
-    };
-  }
+/**
+ * Caminho canônico do imóvel — derivado SEMPRE do registro, nunca da URL pedida.
+ *
+ * Antes o canonical espelhava o que veio na requisição, então /imovel/{uuid},
+ * /imovel/{uuid}/{slug} e /imovel/{short_id}/{slug} serviam o mesmo conteúdo
+ * apontando cada um para si mesmo. O Google chamava isso de "cópia sem página
+ * canônica selecionada pelo usuário".
+ */
+function canonicalPath(property) {
+  const slug = propertySlug(property);
+  const routeId = property.short_id ?? property.id;
+  return slug ? `/imovel/${routeId}/${slug}` : `/imovel/${routeId}`;
+}
 
+/** Meta de "imóvel não encontrado" — acompanha um HTTP 404 de verdade. */
+function notFoundMeta() {
+  return {
+    title: `Imóvel não encontrado | ${SITE_NAME}`,
+    description: "Este imóvel não está mais disponível no portfólio da Ro Molina Imóveis.",
+    image: DEFAULT_IMAGE,
+    imageSized: false,
+    url: `${SITE_URL}/imoveis`,
+    noIndex: true,
+  };
+}
+
+/** Monta título, descrição e imagem do preview a partir do imóvel. */
+function buildMeta(property) {
   const purposeLabel = property.purpose === "aluguel" ? "Aluguel" : "Venda";
   const specs = [
     property.bedrooms ? `${property.bedrooms} dorm.` : null,
@@ -214,21 +247,14 @@ function buildMeta(property, host, rawId, rawSlug) {
   const firstImage = Array.isArray(property.images) ? property.images[0] : null;
   const { url: image, sized: imageSized } = ogImageUrl(firstImage);
 
-  // URL canônica: usa o rawId (shortId) e slug da URL original se disponíveis,
-  // caso contrário usa o UUID do imóvel como fallback.
-  const slugStr = rawSlug || propertySlug(property);
-  const routeId = rawId || property.id;
-  const canonicalUrl = slugStr
-    ? `${SITE_URL}/imovel/${routeId}/${slugStr}`
-    : `${SITE_URL}/imovel/${property.id}`;
-
   return {
     title: `${clean(property.title)} | ${SITE_NAME}`,
     description,
     image,
     imageSized,
-    // URL canônica reflete a URL real da página (shortId/slug), não o UUID interno
-    url: canonicalUrl,
+    // Uma única URL canônica por imóvel, sempre derivada do registro.
+    url: `${SITE_URL}${canonicalPath(property)}`,
+    noIndex: false,
   };
 }
 
@@ -251,6 +277,7 @@ function metaTagsHtml(meta) {
   );
 
   return [
+    meta.noIndex ? `<meta name="robots" content="noindex,follow" />` : null,
     `<meta property="og:type" content="website" />`,
     `<meta property="og:site_name" content="${esc(SITE_NAME)}" />`,
     `<meta property="og:locale" content="pt_BR" />`,
@@ -268,7 +295,7 @@ function metaTagsHtml(meta) {
     `<meta name="twitter:description" content="${d}" />`,
     `<meta name="twitter:image" content="${img}" />`,
     `<link rel="canonical" href="${url}" />`,
-    `<script type="application/ld+json">${jsonLd}</script>`,
+    meta.noIndex ? null : `<script type="application/ld+json">${jsonLd}</script>`,
   ].filter(Boolean).join("\n    ");
 }
 
@@ -286,24 +313,13 @@ function injectMeta(html, meta) {
     .replace(/\s*<meta\s+property="og:[^"]*"[^>]*>/gi, "")
     .replace(/\s*<meta\s+name="twitter:[^"]*"[^>]*>/gi, "")
     .replace(/\s*<link\s+rel="canonical"[^>]*>/gi, "")
+    .replace(/\s*<meta\s+name="robots"[^>]*>/gi, "")
     .replace(/\s*<script\s+type="application\/ld\+json">[\s\S]*?<\/script>/gi, "")
     .replace(/<\/head>/i, `    ${tags}\n  </head>`);
 }
 
-export default async function handler(req, res) {
-  const id = req.query?.id ?? "";
-  const slug = req.query?.slug ?? "";
-  const host = safeHost(req);
-
-  let meta;
-  try {
-    const property = await fetchProperty(id, slug);
-    meta = buildMeta(property, host, id, slug);
-  } catch {
-    meta = buildMeta(null, host, id, slug);
-  }
-
-  // Busca o shell estático da SPA e injeta as meta tags.
+/** Entrega o shell da SPA com as meta tags injetadas, no status pedido. */
+async function sendShell(res, host, meta, status) {
   let html;
   try {
     const shell = await fetch(`https://${host}/index.html`);
@@ -316,5 +332,36 @@ export default async function handler(req, res) {
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   // Cache no CDN da Vercel: respostas rápidas pro robô, revalida a cada 10 min.
   res.setHeader("Cache-Control", "public, max-age=0, s-maxage=600, stale-while-revalidate=86400");
-  res.status(200).send(html);
+  res.status(status).send(html);
+}
+
+export default async function handler(req, res) {
+  const id = String(req.query?.id ?? "");
+  const slug = String(req.query?.slug ?? "");
+  const host = safeHost(req);
+
+  let property = null;
+  try {
+    property = await fetchProperty(id, slug);
+  } catch {
+    property = null;
+  }
+
+  // Imóvel removido ou id inválido: 404 de verdade. Antes respondíamos 200 com
+  // o preview padrão do site, e o Google registrava isso como soft 404.
+  if (!property) {
+    return sendShell(res, host, notFoundMeta(), 404);
+  }
+
+  // Uma URL só por imóvel: qualquer variante (UUID, número defasado, sem slug)
+  // vira 301 para a canônica, em vez de servir conteúdo duplicado.
+  const target = canonicalPath(property);
+  const requested = slug ? `/imovel/${id}/${slug}` : `/imovel/${id}`;
+  if (requested !== target) {
+    res.setHeader("Location", `https://${host}${target}`);
+    res.setHeader("Cache-Control", "public, max-age=0, s-maxage=600, stale-while-revalidate=86400");
+    return res.status(301).end();
+  }
+
+  return sendShell(res, host, buildMeta(property), 200);
 }

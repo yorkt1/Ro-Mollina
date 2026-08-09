@@ -6,6 +6,7 @@ import { useLanguage, type Language } from "@/hooks/use-language";
 import { propertyTypeLabel } from "@/data/properties";
 import { usePropertyTypes } from "@/hooks/use-property-types";
 import { useDestinationLinks } from "@/hooks/use-destination-links";
+import { typeSlug } from "@/lib/storefront-filters";
 
 /* ── Menu items ───────────────────────────────── */
 type MenuItem = { label: string; to: string; icon: React.ElementType };
@@ -151,13 +152,13 @@ export default function Header() {
   // O "Ver todos" é renderizado à parte (dropdown e drawer), então não entra aqui.
   const autoBuyItems = propertyTypes.map(pt => ({
     label: getTranslatedTypeName(pt.name),
-    to: `/comprar/${pt.name}`,
+    to: `/comprar/${typeSlug(pt.name)}`,
     icon: getLinkIcon(pt.name)
   }));
 
   const autoRentItems = propertyTypes.map(pt => ({
     label: getTranslatedTypeName(pt.name),
-    to: `/alugar/${pt.name}`,
+    to: `/alugar/${typeSlug(pt.name)}`,
     icon: getLinkIcon(pt.name)
   }));
 

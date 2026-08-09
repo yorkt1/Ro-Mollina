@@ -8,6 +8,7 @@ import type { Property } from "@/data/properties";
 function dbToProperty(db: DbProperty): Property {
   return {
     id: db.id,
+    shortId: db.short_id ?? undefined,
     title: db.title,
     description: db.description,
     fullDescription: db.full_description ?? undefined,
@@ -67,9 +68,11 @@ export function useProperties() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
+      // shortId vem do banco (coluna short_id) e é estável. O `index + 1` só
+      // sobrevive como fallback para linhas antigas sem a coluna preenchida.
       return (data as DbProperty[]).map((db, index) => ({
         ...dbToProperty(db),
-        shortId: index + 1,
+        shortId: db.short_id ?? index + 1,
       }));
     },
     staleTime: 1000 * 60 * 2,

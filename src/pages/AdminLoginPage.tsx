@@ -4,6 +4,7 @@ import { ArrowRight, Loader2, LockKeyhole, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import heroBg from "@/assets/hero-bg.jpg";
+import SEO from "@/components/SEO";
 
 export default function AdminLoginPage() {
   const { signIn, user, loading: authLoading } = useAuth();
@@ -39,6 +40,7 @@ export default function AdminLoginPage() {
 
   return (
     <div className="grid min-h-screen lg:grid-cols-[0.95fr_1.05fr]">
+      <SEO title="Acesso ao painel" noIndex />
       <section className="relative hidden overflow-hidden bg-[hsl(var(--navy-deep))] lg:block">
         <img src={heroBg} alt="Painel premium Ro Molina" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-[hsl(var(--hero-overlay)/0.76)]" />

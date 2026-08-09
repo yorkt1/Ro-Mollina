@@ -1,24 +1,44 @@
+# Regras de rastreamento — romolinaimoveis.com.br
+#
+# Atenção ao editar: grupos de robots.txt NÃO são cumulativos. O robô obedece
+# apenas ao grupo mais específico que casa com o seu nome, e ignora o grupo "*"
+# por completo. Por isso as regras abaixo são repetidas em cada grupo — antes,
+# "User-agent: Googlebot / Allow: /" fazia o Googlebot ignorar o Disallow do
+# painel admin.
+#
+# /admin/login fica liberado de propósito: a página tem <meta name="robots"
+# content="noindex">, e o Google só consegue ler essa tag se puder rastreá-la.
+
 User-agent: *
 Allow: /
+Allow: /admin/login
 Disallow: /admin/
 
 # Bots de busca e IA — acesso total ao conteúdo de imóveis
 User-agent: Googlebot
 Allow: /
+Allow: /admin/login
+Disallow: /admin/
 
 User-agent: bingbot
 Allow: /
+Allow: /admin/login
+Disallow: /admin/
 
 User-agent: meta-externalagent
 Allow: /
+Disallow: /admin/
 
 User-agent: GPTBot
 Allow: /
+Disallow: /admin/
 
 User-agent: ClaudeBot
 Allow: /
+Disallow: /admin/
 
 User-agent: PerplexityBot
 Allow: /
+Disallow: /admin/
 
 Sitemap: https://www.romolinaimoveis.com.br/sitemap.xml

@@ -6,6 +6,22 @@ function normalizeFilterValue(value: string) {
     .toLowerCase();
 }
 
+/**
+ * Forma canônica de um tipo de imóvel para uso em URL.
+ * "Casa & Apartamento" → "casa-apartamento", "Sítio" → "sitio".
+ *
+ * Os nomes dos tipos são digitados no admin e contêm acento, espaço e "&".
+ * Jogá-los crus na URL gerava caminhos como `/alugar/casa & apartamento`, que
+ * o Google rastreia e descarta. Esta função é a única fonte da verdade tanto
+ * para montar o link quanto para casar a rota de volta com o tipo do banco.
+ */
+export function typeSlug(value: string) {
+  return normalizeFilterValue(value)
+    .replace(/&/g, " ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export type PropertyShowcase = "todos" | "destaques" | "oportunidades";
 
 export function propertyMatchesShowcase(
@@ -22,14 +38,16 @@ export function propertyMatchesShowcase(
 }
 
 export function propertyTypeMatchesFilter(propertyType: string, selectedType: string) {
-  const type = normalizeFilterValue(propertyType);
-  const filter = normalizeFilterValue(selectedType);
+  // Compara pela forma de URL, então tanto "Casa & Apartamento" (nome do banco)
+  // quanto "casa-apartamento" (segmento da rota) casam com o mesmo imóvel.
+  const type = typeSlug(propertyType);
+  const filter = typeSlug(selectedType);
 
   if (!filter || filter === "todos") return true;
 
   // "Terrenos" is a storefront category that includes its registered subtypes.
   if (filter === "terreno") {
-    return type === "terreno" || type.startsWith("terreno ");
+    return type === "terreno" || type.startsWith("terreno-");
   }
 
   return type === filter;

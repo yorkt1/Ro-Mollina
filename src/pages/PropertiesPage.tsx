@@ -18,6 +18,7 @@ import {
   propertyMatchesShowcase,
   propertyTypeMatchesCategory,
   propertyTypeMatchesFilter,
+  typeSlug,
   type PropertyShowcase,
 } from "@/lib/storefront-filters";
 
@@ -35,7 +36,16 @@ export default function PropertiesPage({
   const [searchParams, setSearchParams] = useSearchParams();
   const { type: urlType } = useParams();
 
-  const initialType = urlType || searchParams.get("tipo") || "todos";
+  // A rota traz o tipo em forma de slug (/alugar/casa-em-condominio). O <Select>
+  // e os rótulos precisam do nome real cadastrado ("Casa em Condomínio"), então
+  // convertemos de volta assim que a lista de tipos chega.
+  const resolvedUrlType = useMemo(() => {
+    if (!urlType) return undefined;
+    const wanted = typeSlug(urlType);
+    return propertyTypes.find((t) => typeSlug(t.name) === wanted)?.name ?? urlType;
+  }, [urlType, propertyTypes]);
+
+  const initialType = resolvedUrlType || searchParams.get("tipo") || "todos";
   const initialLocation = searchParams.get("bairro") || "todos";
   const initialMinPrice = searchParams.get("min") || "";
   const initialMaxPrice = searchParams.get("max") || "";
@@ -58,12 +68,12 @@ export default function PropertiesPage({
   // Sync state with URL when searchParams or defaultPurpose changes
   useEffect(() => {
     setPurpose(defaultPurpose);
-    setType(urlType || searchParams.get("tipo") || "todos");
+    setType(resolvedUrlType || searchParams.get("tipo") || "todos");
     setLocation(searchParams.get("bairro") || "todos");
     setMinPrice(searchParams.get("min") || "");
     setMaxPrice(searchParams.get("max") || "");
     setBedrooms(searchParams.get("quartos") || "todos");
-  }, [searchParams, defaultPurpose, urlType]);
+  }, [searchParams, defaultPurpose, resolvedUrlType]);
 
   // Derive locations from Supabase data
   const publicLocations = useMemo(

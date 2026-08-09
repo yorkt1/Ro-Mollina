@@ -1,6 +1,8 @@
 // Types that match the Supabase "properties" table
 export interface DbProperty {
   id: string;
+  /** Número curto e estável usado na URL pública (/imovel/{short_id}/{slug}). */
+  short_id?: number | null;
   created_at: string;
   title: string;
   description: string;
