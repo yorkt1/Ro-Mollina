@@ -53,6 +53,8 @@ function dbToProperty(db: DbProperty): Property {
     cep: db.cep ?? undefined,
     addressNumber: db.address_number ?? undefined,
     street: db.street ?? undefined,
+    olxEnabled: db.olx_enabled ?? false,
+    olxEnabledAt: db.olx_enabled_at ?? undefined,
   };
 }
 

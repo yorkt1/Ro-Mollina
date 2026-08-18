@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import SEO from "@/components/SEO";
-import { Building2, TrendingUp, Sparkles, Youtube, Menu, X, LogOut, Settings } from "lucide-react";
+import { Building2, TrendingUp, Sparkles, Youtube, Megaphone, Menu, X, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -10,6 +10,7 @@ const items = [
   { to: "/admin/destaques",  label: "Destaques",       icon: Sparkles   },
   { to: "/admin/youtube",    label: "YouTube",          icon: Youtube    },
   { to: "/admin/leads",      label: "Leads & Pipeline", icon: TrendingUp },
+  { to: "/admin/olx",        label: "OLX",              icon: Megaphone  },
   { to: "/admin/configuracoes", label: "Configurações",    icon: Settings   },
 ];
 

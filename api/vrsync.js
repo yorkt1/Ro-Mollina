@@ -9,9 +9,11 @@
  * Spec: https://developers.grupozap.com/feeds/xml-formats/
  * Roteamento: ver vercel.json — /vrsync.xml → /api/vrsync
  *
- * Imóveis com cadastro incompleto são deixados de fora (o portal rejeitaria o
- * arquivo inteiro ou o anúncio individual). Para ver o que ficou de fora e por
- * quê, acesse /vrsync.xml?relatorio=1 — devolve JSON em vez de XML.
+ * O feed publica apenas os imóveis marcados no painel (/admin/olx), até o
+ * limite de anúncios do plano contratado. Imóveis com cadastro incompleto são
+ * deixados de fora (o portal rejeitaria o arquivo inteiro ou o anúncio
+ * individual). Para ver o que ficou de fora e por quê, acesse
+ * /vrsync.xml?relatorio=1 — devolve JSON em vez de XML.
  */
 
 import {
@@ -30,6 +32,13 @@ const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1andncHVtZGdnZ2dibnh1aGVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNzgyNzIsImV4cCI6MjA5MTc1NDI3Mn0.if2iY21S6reNWF0b3SfJ02jCarorP1DRamW0SI2knTU";
 
 const SITE_URL = (process.env.VITE_SITE_URL || "https://www.romolinaimoveis.com.br").replace(/\/$/, "");
+
+/**
+ * Anúncios simultâneos do plano contratado no Canal Pro. O corte também é feito
+ * aqui, e não só no painel, para que uma marcação a mais no banco nunca vire um
+ * anúncio acima do plano (o portal cobraria ou recusaria o excedente).
+ */
+export const OLX_PLAN_LIMIT = Number(process.env.OLX_PLAN_LIMIT) || 10;
 
 /** Dados da imobiliária que vão em Header e ContactInfo. */
 const AGENCY = {
@@ -53,7 +62,7 @@ const COLUMNS = [
   "price", "purpose", "type", "location", "neighborhood", "zone", "street",
   "address_number", "cep", "area", "built_area", "land_area", "total_area",
   "bedrooms", "bathrooms", "suites", "parking_spots", "images", "video_url",
-  "leisure", "nearby", "furnished", "created_at",
+  "leisure", "nearby", "furnished", "created_at", "olx_enabled", "olx_enabled_at",
 ].join(",");
 
 /* ------------------------------------------------------------------ *
@@ -407,8 +416,11 @@ ${listings.join("\n")}
 export default async function handler(req, res) {
   let properties = [];
   try {
+    // Ordem por olx_enabled_at: se houver mais marcados que o plano, quem ocupou
+    // a vaga primeiro continua no ar em vez de sair na troca de um terceiro.
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/properties?select=${COLUMNS}&order=created_at.desc`,
+      `${SUPABASE_URL}/rest/v1/properties?select=${COLUMNS}` +
+        `&olx_enabled=eq.true&order=olx_enabled_at.asc.nullslast,created_at.desc&limit=${OLX_PLAN_LIMIT}`,
       {
         headers: {
           apikey: SUPABASE_ANON_KEY,
@@ -430,7 +442,8 @@ export default async function handler(req, res) {
   if (req.query?.relatorio || req.query?.report) {
     res.setHeader("Cache-Control", "no-store");
     res.status(200).json({
-      total: properties.length,
+      plano: OLX_PLAN_LIMIT,
+      selecionados: properties.length,
       incluidos,
       excluidos: excluidos.length,
       pendencias: excluidos,

@@ -47,6 +47,9 @@ export interface Property {
   cep?: string;
   addressNumber?: string;
   street?: string;
+  /** Publicado no Grupo OLX (OLX Imóveis / ZAP / VivaReal) via /vrsync.xml. */
+  olxEnabled?: boolean;
+  olxEnabledAt?: string;
 }
 
 export const formatCurrency = (value: number) =>

@@ -47,6 +47,10 @@ export interface DbProperty {
   cep?: string | null;
   address_number?: string | null;
   street?: string | null;
+  /** Ocupa uma das vagas do plano no Grupo OLX (feed /vrsync.xml). */
+  olx_enabled?: boolean | null;
+  /** Quando a vaga foi ocupada — desempate quando há mais marcados que o plano. */
+  olx_enabled_at?: string | null;
 }
 
 // Types that match the Supabase "leads" table

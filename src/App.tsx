@@ -22,6 +22,7 @@ const AdminPropertiesPage = lazy(() => import("./pages/AdminPropertiesPage"));
 const AdminLeadsPage = lazy(() => import("./pages/AdminLeadsPage"));
 const AdminHighlightsPage = lazy(() => import("./pages/AdminHighlightsPage"));
 const AdminYouTubePage = lazy(() => import("./pages/AdminYouTubePage"));
+const AdminOlxPage = lazy(() => import("./pages/AdminOlxPage"));
 const AdminSettingsPage = lazy(() => import("./pages/AdminSettingsPage"));
 const AdminLayout = lazy(() => import("@/components/admin/AdminLayout"));
 const ProtectedRoute = lazy(() => import("@/components/admin/ProtectedRoute"));
@@ -54,6 +55,7 @@ const App = () => (
                   <Route path="leads" element={<AdminLeadsPage />} />
                   <Route path="destaques" element={<AdminHighlightsPage />} />
                   <Route path="youtube" element={<AdminYouTubePage />} />
+                  <Route path="olx" element={<AdminOlxPage />} />
                   <Route path="configuracoes" element={<AdminSettingsPage />} />
                 </Route>
                 {/* SEO-friendly property URLs with optional slug; UUID stays as the main identifier */}
