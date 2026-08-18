@@ -6,6 +6,7 @@ import { formatPropertyPrice, propertyTypeLabel, purposeLabel, type Property, ty
 import { useProperties, useCreateProperty, useUpdateProperty, useDeleteProperty, useUpdatePropertyShowcase, uploadPropertyImage, type PropertyFormData } from "@/hooks/use-properties";
 import { useToast } from "@/hooks/use-toast";
 import { usePropertyTypes } from "@/hooks/use-property-types";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 
 const SUPABASE_URL = "https://kujwgpumdggggbnxuhem.supabase.co";
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
@@ -702,7 +703,7 @@ function PropertyFormModal({
                       }`}
                       onClick={() => setPreviewIdx(i)}
                     >
-                      <img src={url} alt={`Imagem ${i + 1}`} className="h-full w-full object-cover pointer-events-none" />
+                      <img src={cloudinaryUrl(url, { width: 400, height: 300 })} alt={`Imagem ${i + 1}`} className="h-full w-full object-cover pointer-events-none" />
 
                       {/* grip handle */}
                       <span className="absolute left-1 top-1 text-white/70 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
@@ -768,7 +769,7 @@ function PropertyFormModal({
             {/* Image */}
             <div className="flex-1 overflow-hidden bg-black/20">
               <img
-                src={form.images[previewIdx]}
+                src={cloudinaryUrl(form.images[previewIdx], { width: 1600, crop: "limit" })}
                 alt={`Imagem ${previewIdx + 1}`}
                 className="max-h-[70vh] w-full object-contain"
               />
@@ -950,7 +951,7 @@ export default function AdminPropertiesPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
                         {property.images[0] ? (
-                          <img src={property.images[0]} alt={property.title} className="h-14 w-20 rounded-sm object-cover" />
+                          <img src={cloudinaryUrl(property.images[0], { width: 160, height: 112 })} alt={property.title} className="h-14 w-20 rounded-sm object-cover" />
                         ) : (
                           <div className="flex h-14 w-20 items-center justify-center rounded-sm bg-secondary text-muted-foreground">
                             <Upload size={18} />

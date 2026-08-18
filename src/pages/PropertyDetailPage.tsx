@@ -17,6 +17,7 @@ import { useSubmitWebsiteLead } from "@/hooks/use-leads";
 import { useToast } from "@/hooks/use-toast";
 import SEO from "@/components/SEO";
 import { propertyPath, propertySlug } from "@/lib/property-links";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 
 /* ── helpers ─────────────────────────────────── */
 
@@ -288,7 +289,7 @@ function GalleryModal({
                 }`}
               >
                 <img
-                  src={img}
+                  src={cloudinaryUrl(img, { width: 480, height: 360 })}
                   alt={`${title} ${i + 1}`}
                   className="aspect-[4/3] w-full object-cover"
                   loading="lazy"
@@ -304,7 +305,7 @@ function GalleryModal({
         <div className="relative flex flex-1 items-center justify-center overflow-hidden px-4">
           <img
             key={current}
-            src={images[current]}
+            src={cloudinaryUrl(images[current], { width: 1920, crop: "limit" })}
             alt={`${title} ${current + 1}`}
             className="max-h-full max-w-full rounded-sm object-contain shadow-2xl"
             style={{ animation: "fadeIn 0.18s ease" }}
@@ -340,7 +341,7 @@ function GalleryModal({
                   i === current ? "border-amber-400 opacity-100" : "border-transparent opacity-50 hover:opacity-80"
                 }`}
               >
-                <img src={img} alt="" className="h-14 w-20 object-cover" />
+                <img src={cloudinaryUrl(img, { width: 160, height: 112 })} alt="" className="h-14 w-20 object-cover" />
               </button>
             ))}
           </div>
@@ -387,7 +388,7 @@ function GalleryThumbnails({
             }`}
           >
             <img
-              src={image}
+              src={cloudinaryUrl(image, { width: 400, height: 300 })}
               alt={`${title} ${index + 1}`}
               className="aspect-[4/3] w-full object-cover"
             />
@@ -671,7 +672,7 @@ export default function PropertyDetailPage() {
     name: property.title,
     description: property.description,
     url: `${siteUrl}${propertyPath(property, propertyShortId)}`,
-    image: property.images,
+    image: property.images.map((img) => cloudinaryUrl(img, { width: 1200, crop: "limit" })),
     numberOfRooms: property.bedrooms,
     numberOfBathroomsTotal: property.bathrooms,
     floorSize: { "@type": "QuantitativeValue", value: property.area, unitCode: "MTK" },
@@ -698,7 +699,7 @@ export default function PropertyDetailPage() {
         title={`${property.title} — ${property.neighborhood}`}
         description={seoDescription}
         url={propertyPath(property, propertyShortId)}
-        image={property.images[0]}
+        image={property.images[0] ? cloudinaryUrl(property.images[0], { width: 1200, height: 630 }) : undefined}
         jsonLd={propertyJsonLd}
       />
       <Header />
@@ -730,7 +731,7 @@ export default function PropertyDetailPage() {
               >
                 {property.images[selectedImage] ? (
                   <img
-                    src={property.images[selectedImage]}
+                    src={cloudinaryUrl(property.images[selectedImage], { width: 1600, crop: "limit" })}
                     alt={property.title}
                     className="aspect-[16/10] w-full object-cover"
                   />

@@ -81,6 +81,13 @@ export async function uploadImageToCloudinary(file: File): Promise<string> {
 /**
  * Gera uma URL otimizada do Cloudinary com transformações automáticas.
  * Útil para thumbnails e imagens responsivas.
+ *
+ * O `f_auto` não é só otimização: fotos vindas de iPhone chegam em HEIC, que
+ * NENHUM navegador de desktop decodifica. Servida crua, a URL .heic responde
+ * 200 com Content-Type image/heic e o <img> fica em branco. Com `f_auto` o
+ * Cloudinary converte na entrega (JPEG/WebP/AVIF conforme o Accept do
+ * navegador). Por isso toda foto do banco deve passar por aqui antes de virar
+ * `src` — nunca renderize `property.images[i]` direto.
  */
 export function cloudinaryUrl(
   url: string,
