@@ -1,8 +1,10 @@
 import { useRef, useState, type DragEvent, type ReactNode } from "react";
 import {
+  Building2,
   CalendarClock,
   Edit3,
   ExternalLink,
+  Flame,
   GripVertical,
   Loader2,
   Mail,
@@ -13,8 +15,16 @@ import {
   UserRound,
   type LucideIcon,
 } from "lucide-react";
-import { leadStages, type Lead, type LeadStage } from "@/domain/leads";
+import {
+  isPortalLead,
+  leadStages,
+  leadTypeLabel,
+  type Lead,
+  type LeadStage,
+  type LeadTemperature,
+} from "@/domain/leads";
 import { useDeleteLead, useLeads, useUpdateLeadStage } from "@/hooks/use-leads";
+import { useProperties } from "@/hooks/use-properties";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import LeadFormDialog from "@/components/admin/LeadFormDialog";
@@ -57,8 +67,50 @@ function DetailItem({
   );
 }
 
+/**
+ * A temperatura vem calculada pelo próprio portal (Baixa/Média/Alta) e é o
+ * único sinal de prioridade que o lead traz de fábrica — por isso ganha cor.
+ */
+function TemperatureTag({ value }: { value: LeadTemperature }) {
+  const tone =
+    value === "Alta"
+      ? "border-red-200 bg-red-50 text-red-700"
+      : value === "Média"
+        ? "border-amber-200 bg-amber-50 text-amber-700"
+        : "border-border bg-secondary text-muted-foreground";
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] ${tone}`}
+    >
+      <Flame size={10} /> {value}
+    </span>
+  );
+}
+
+/** Etiquetas de um lead que chegou pelo webhook do Grupo OLX. */
+function PortalTags({ lead }: { lead: Lead }) {
+  if (!isPortalLead(lead)) return null;
+  const channel = leadTypeLabel(lead.leadType);
+
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+      <span className="inline-flex items-center rounded-full border border-navy/20 bg-navy/5 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-navy">
+        {lead.source === "MCMV" ? "MCMV" : "Portal"}
+      </span>
+      {channel && (
+        <span className="inline-flex items-center rounded-full border border-border bg-secondary px-2 py-0.5 text-[10px] text-muted-foreground">
+          {channel}
+        </span>
+      )}
+      {lead.temperature && <TemperatureTag value={lead.temperature} />}
+    </div>
+  );
+}
+
 export default function LeadsPipeline() {
   const { data: leads = [], isLoading } = useLeads();
+  const { data: properties = [] } = useProperties();
   const updateStage = useUpdateLeadStage();
   const deleteLead = useDeleteLead();
   const { toast } = useToast();
@@ -72,6 +124,13 @@ export default function LeadsPipeline() {
   const landingPage = selectedLead?.marketingData?.landing_page;
   const safeLandingPage =
     landingPage?.startsWith("/") && !landingPage.startsWith("//") ? landingPage : null;
+
+  // Imóvel do anúncio que gerou o lead. O webhook já resolve o vínculo quando o
+  // clientListingId bate com um cadastro; aqui só buscamos o título para a
+  // corretora saber do que a pessoa está falando antes de retornar o contato.
+  const selectedProperty = selectedLead?.propertyId
+    ? properties.find((property) => property.id === selectedLead.propertyId)
+    : undefined;
 
   const moveLead = async (lead: Lead, stage: LeadStage) => {
     if (lead.stage === stage || updateStage.isPending) return;
@@ -207,6 +266,7 @@ export default function LeadsPipeline() {
                     <p className="mt-1 text-xs uppercase tracking-[0.18em] text-accent">
                       {lead.interest}
                     </p>
+                    <PortalTags lead={lead} />
                     <p className="mt-2 text-sm text-muted-foreground">{lead.neighborhood}</p>
                     <p className="text-sm text-muted-foreground">{lead.budget}</p>
                     <p className="mt-2 text-xs text-muted-foreground">{lead.lastContact}</p>
@@ -265,10 +325,18 @@ export default function LeadsPipeline() {
               <DialogTitle className="font-serif text-2xl font-medium">{selectedLead.name}</DialogTitle>
               <DialogDescription>
                 Origem: {selectedLead.source}
+                {leadTypeLabel(selectedLead.leadType)
+                  ? ` · ${leadTypeLabel(selectedLead.leadType)}`
+                  : ""}
                 {selectedLead.marketingData?.utm_source
                   ? ` · ${selectedLead.marketingData.utm_source}`
                   : ""}
               </DialogDescription>
+              {selectedLead.temperature && (
+                <div className="pt-1">
+                  <TemperatureTag value={selectedLead.temperature} />
+                </div>
+              )}
             </DialogHeader>
 
             <div className="space-y-5 px-6 pb-6">
@@ -311,6 +379,24 @@ export default function LeadsPipeline() {
                 <DetailItem icon={MapPin} label="Interesse">
                   {selectedLead.neighborhood} · {selectedLead.interest}
                 </DetailItem>
+                {(selectedProperty || selectedLead.clientListingId) && (
+                  <DetailItem icon={Building2} label="Anúncio do lead">
+                    {selectedProperty ? (
+                      <a
+                        href={`/imovel/${selectedProperty.shortId ?? selectedProperty.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 hover:text-accent"
+                      >
+                        {selectedProperty.title} <ExternalLink size={13} />
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        Código {selectedLead.clientListingId} — imóvel não está mais no site
+                      </span>
+                    )}
+                  </DetailItem>
+                )}
                 <DetailItem icon={UserRound} label="Responsável">
                   {selectedLead.owner}
                 </DetailItem>

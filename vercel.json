@@ -2,6 +2,7 @@
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/vrsync.xml", "destination": "/api/vrsync" },
+    { "source": "/grupozap/lead", "destination": "/api/leads/grupozap" },
     { "source": "/imovel/:id", "destination": "/api/imovel?id=:id" },
     { "source": "/imovel/:id/:slug", "destination": "/api/imovel?id=:id&slug=:slug" },
     { "source": "/imovel/:id/:slug/:rest*", "destination": "/api/imovel?id=:id&slug=:slug" },

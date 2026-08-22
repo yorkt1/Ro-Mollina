@@ -1,19 +1,62 @@
-import { useState } from "react";
-import { CheckCircle2, Inbox, Loader2, Plus, TrendingUp, Users } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  CheckCircle2,
+  Inbox,
+  Loader2,
+  Megaphone,
+  Plus,
+  Search,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import LeadsPipeline from "@/components/admin/LeadsPipeline";
 import LeadFormDialog from "@/components/admin/LeadFormDialog";
 import CrmStatCard from "@/components/admin/CrmStatCard";
 import { Button } from "@/components/ui/button";
+import {
+  isPortalLead,
+  leadSourceFilters,
+  leadStages,
+  leadTypeLabel,
+} from "@/domain/leads";
 import { useLeads } from "@/hooks/use-leads";
 
 export default function AdminLeadsPage() {
   const { data: leads = [], isLoading, error } = useLeads();
   const [createOpen, setCreateOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [sourceFilter, setSourceFilter] = useState("todos");
+  const [stageFilter, setStageFilter] = useState("todas");
   const newLeads = leads.filter((lead) => lead.stage === "novo").length;
   const activeLeads = leads.filter((lead) =>
     ["qualificado", "visita", "proposta"].includes(lead.stage),
   ).length;
   const closedLeads = leads.filter((lead) => lead.stage === "fechamento").length;
+  const portalLeads = leads.filter(isPortalLead).length;
+
+  const filteredLeads = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    const sources =
+      leadSourceFilters.find((filter) => filter.key === sourceFilter)?.sources ?? [];
+
+    return leads.filter((lead) => {
+      if (sources.length > 0 && !sources.includes(lead.source)) return false;
+      if (stageFilter !== "todas" && lead.stage !== stageFilter) return false;
+      if (!term) return true;
+
+      return [
+        lead.name,
+        lead.phone,
+        lead.email,
+        lead.neighborhood,
+        lead.message,
+        lead.clientListingId ?? "",
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(term);
+    });
+  }, [leads, search, sourceFilter, stageFilter]);
 
   if (error) {
     return (
@@ -34,7 +77,9 @@ export default function AdminLeadsPage() {
           <p className="text-xs uppercase tracking-[0.28em] text-accent">CRM comercial</p>
           <h1 className="text-4xl text-foreground">Leads e pipeline</h1>
           <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
-            Gerencie leads vindos do site, WhatsApp, Instagram e indicação em um único fluxo comercial.
+            Contatos do site, do WhatsApp, do Instagram, de indicação e dos anúncios no OLX, ZAP e
+            VivaReal em um único fluxo comercial. Os leads dos portais entram sozinhos, no momento
+            em que a pessoa clica no anúncio.
           </p>
         </div>
         <Button variant="crm" onClick={() => setCreateOpen(true)}>
@@ -43,12 +88,18 @@ export default function AdminLeadsPage() {
         </Button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <CrmStatCard
           icon={Users}
           label="Total de leads"
           value={`${leads.length}`}
           helper="Contatos reais cadastrados"
+        />
+        <CrmStatCard
+          icon={Megaphone}
+          label="Dos portais"
+          value={`${portalLeads}`}
+          helper="OLX, ZAP e VivaReal"
         />
         <CrmStatCard
           icon={Inbox}
@@ -79,6 +130,51 @@ export default function AdminLeadsPage() {
       </section>
 
       <section className="overflow-hidden rounded-sm border border-border bg-card">
+        <div className="flex flex-col gap-3 border-b border-border p-4 lg:flex-row lg:items-center">
+          <div className="relative flex-1">
+            <Search
+              size={16}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            />
+            <input
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Buscar por nome, telefone, e-mail, bairro ou código do anúncio"
+              aria-label="Buscar leads"
+              className="h-11 w-full rounded-sm border border-border bg-background pl-9 pr-3 text-sm text-foreground outline-none transition-colors focus:border-accent"
+            />
+          </div>
+          <select
+            value={sourceFilter}
+            onChange={(event) => setSourceFilter(event.target.value)}
+            aria-label="Filtrar por origem"
+            className="h-11 rounded-sm border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors focus:border-accent"
+          >
+            {leadSourceFilters.map((filter) => (
+              <option key={filter.key} value={filter.key}>
+                {filter.label}
+              </option>
+            ))}
+          </select>
+          <select
+            value={stageFilter}
+            onChange={(event) => setStageFilter(event.target.value)}
+            aria-label="Filtrar por etapa"
+            className="h-11 rounded-sm border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors focus:border-accent"
+          >
+            <option value="todas">Todas as etapas</option>
+            {leadStages.map((stage) => (
+              <option key={stage.key} value={stage.key}>
+                {stage.label}
+              </option>
+            ))}
+          </select>
+          <span className="shrink-0 text-sm text-muted-foreground">
+            {filteredLeads.length} de {leads.length}
+          </span>
+        </div>
+
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-accent" />
@@ -97,11 +193,16 @@ export default function AdminLeadsPage() {
                 </tr>
               </thead>
               <tbody>
-                {leads.map((lead) => (
+                {filteredLeads.map((lead) => (
                   <tr key={lead.id} className="border-t border-border">
                     <td className="px-6 py-4">
                       <p className="font-medium text-foreground">{lead.name}</p>
                       <p className="mt-1 text-sm text-muted-foreground">{lead.neighborhood}</p>
+                      {lead.clientListingId && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Anúncio {lead.clientListingId}
+                        </p>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <p className="text-foreground">{lead.phone || "Não informado"}</p>
@@ -109,6 +210,13 @@ export default function AdminLeadsPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-foreground">
                       <p>{lead.source}</p>
+                      {(leadTypeLabel(lead.leadType) || lead.temperature) && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {[leadTypeLabel(lead.leadType), lead.temperature]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </p>
+                      )}
                       {lead.marketingData?.utm_source && (
                         <p className="mt-1 text-xs text-muted-foreground">
                           {lead.marketingData.utm_source}
@@ -125,10 +233,12 @@ export default function AdminLeadsPage() {
                     <td className="px-6 py-4 text-sm text-foreground">{lead.owner}</td>
                   </tr>
                 ))}
-                {leads.length === 0 && !isLoading && (
+                {filteredLeads.length === 0 && !isLoading && (
                   <tr>
                     <td colSpan={6} className="px-6 py-16 text-center text-muted-foreground">
-                      Nenhum lead cadastrado ainda.
+                      {leads.length === 0
+                        ? "Nenhum lead cadastrado ainda."
+                        : "Nenhum lead com esses filtros."}
                     </td>
                   </tr>
                 )}

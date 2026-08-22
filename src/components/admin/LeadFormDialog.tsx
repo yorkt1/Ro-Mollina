@@ -58,6 +58,13 @@ export default function LeadFormDialog({
   const isEditing = Boolean(lead);
   const isPending = createLead.isPending || updateLead.isPending;
 
+  // Lead do portal tem origem que não está na lista de cadastro manual ("Grupo
+  // OLX", "MCMV"). Sem incluí-la aqui, abrir o lead para editar trocaria a
+  // origem em silêncio pela primeira opção do select.
+  const sourceOptions = leadSources.includes(form.source)
+    ? leadSources
+    : [form.source, ...leadSources];
+
   useEffect(() => {
     if (!open) return;
     setForm(lead ? leadToForm(lead) : { ...emptyLeadForm });
@@ -176,7 +183,7 @@ export default function LeadFormDialog({
                 }
                 className={inputClass}
               >
-                {leadSources.map((source) => (
+                {sourceOptions.map((source) => (
                   <option key={source} value={source}>
                     {source}
                   </option>

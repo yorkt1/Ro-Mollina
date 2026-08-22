@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   Check,
   CheckCircle2,
   Copy,
   ExternalLink,
+  Inbox,
   Loader2,
   Megaphone,
   Minus,
@@ -12,6 +13,7 @@ import {
   Search,
   Upload,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { formatPropertyPrice, propertyTypeLabel, purposeLabel, type Property } from "@/data/properties";
 import { useProperties } from "@/hooks/use-properties";
@@ -22,6 +24,108 @@ import { OLX_PLAN_LIMIT, checkOlxReadiness } from "@/lib/olx-feed";
 
 /** Endereço que precisa ser cadastrado no Canal Pro do Grupo OLX. */
 const FEED_PATH = "/vrsync.xml";
+
+/** Endpoint que recebe os leads dos anúncios (Canal Pro → Integrações → Leads). */
+const LEAD_PATH = "/grupozap/lead";
+
+/**
+ * Estado do recebimento de leads dos portais.
+ *
+ * O próprio endpoint responde no GET se está pronto (chave de gravação
+ * configurada) e se exige token. Sem esse aviso, uma variável de ambiente
+ * faltando no Vercel só apareceria como "os leads do ZAP pararam de chegar".
+ */
+function LeadWebhookCard() {
+  const [status, setStatus] = useState<
+    { configured: boolean; authenticated: boolean } | "loading" | "offline"
+  >("loading");
+  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
+
+  const leadUrl = `${typeof window === "undefined" ? "" : window.location.origin}${LEAD_PATH}`;
+
+  useEffect(() => {
+    let active = true;
+    fetch(LEAD_PATH, { headers: { Accept: "application/json" } })
+      .then((response) => (response.ok ? response.json() : Promise.reject(response.status)))
+      .then((data) => {
+        if (active) setStatus({ configured: !!data.configured, authenticated: !!data.authenticated });
+      })
+      .catch(() => {
+        if (active) setStatus("offline");
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(leadUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({ title: "Copie manualmente", description: leadUrl });
+    }
+  };
+
+  return (
+    <div className="rounded-sm border border-border bg-card p-6">
+      <div className="flex items-start gap-3">
+        <Inbox size={18} className="mt-0.5 shrink-0 text-accent" />
+        <div className="min-w-0 flex-1 space-y-3">
+          <div>
+            <p className="font-medium text-foreground">Leads dos anúncios caindo no CRM</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Cadastrado uma única vez em Canal Pro → Configurações → Integrações → Leads →
+              "Receber leads no CRM". Quem clica em contato num anúncio do OLX, ZAP ou VivaReal vira
+              um lead novo no pipeline na hora, sem ninguém copiar nada.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <code className="flex-1 truncate rounded-sm border border-border bg-secondary/40 px-3 py-2 text-sm text-foreground">
+              {leadUrl}
+            </code>
+            <div className="flex gap-2">
+              <Button variant="crmSecondary" size="sm" onClick={handleCopy}>
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+                {copied ? "Copiado" : "Copiar"}
+              </Button>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/admin/leads">
+                  <ExternalLink size={14} /> Ver leads
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          {status === "loading" && (
+            <p className="text-xs text-muted-foreground">Verificando o recebimento...</p>
+          )}
+          {status === "offline" && (
+            <p className="flex items-center gap-1.5 text-xs font-medium text-amber-700">
+              <AlertTriangle size={13} /> Endereço fora do ar — só funciona no site publicado, não no
+              ambiente de desenvolvimento.
+            </p>
+          )}
+          {typeof status === "object" && (
+            <p
+              className={`flex items-center gap-1.5 text-xs font-medium ${
+                status.configured ? "text-emerald-700" : "text-amber-700"
+              }`}
+            >
+              {status.configured ? <CheckCircle2 size={13} /> : <AlertTriangle size={13} />}
+              {status.configured
+                ? `Pronto para receber leads${status.authenticated ? " · protegido por token" : " · sem token de proteção"}`
+                : "Falta a chave de gravação (SUPABASE_SERVICE_ROLE_KEY) no Vercel"}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ─── Linha de imóvel ───────────────────────────────────
 
@@ -243,6 +347,9 @@ export default function AdminOlxPage() {
           </div>
         </div>
       </div>
+
+      {/* Volta dos anúncios: os leads */}
+      <LeadWebhookCard />
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">

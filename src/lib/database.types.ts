@@ -60,7 +60,7 @@ export interface DbLead {
   updated_at?: string;
   name: string;
   stage: "novo" | "qualificado" | "visita" | "proposta" | "fechamento";
-  source: "WhatsApp" | "Instagram" | "Site" | "Indicação";
+  source: "WhatsApp" | "Instagram" | "Site" | "Indicação" | "Grupo OLX" | "MCMV";
   budget: string;
   interest: "venda" | "aluguel";
   neighborhood: string;
@@ -70,4 +70,11 @@ export interface DbLead {
   email: string | null;
   message: string | null;
   marketing_data: Record<string, string> | null;
+  /** Colunas preenchidas pelo webhook do Grupo OLX (/api/leads/grupozap). */
+  external_id?: string | null;
+  origin_listing_id?: string | null;
+  client_listing_id?: string | null;
+  property_id?: string | null;
+  lead_type?: string | null;
+  temperature?: string | null;
 }

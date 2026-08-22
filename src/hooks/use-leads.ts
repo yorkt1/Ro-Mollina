@@ -28,6 +28,12 @@ function dbToLead(db: DbLead): Lead {
     email: db.email ?? "",
     message: db.message ?? "",
     marketingData: db.marketing_data ?? undefined,
+    externalId: db.external_id ?? undefined,
+    originListingId: db.origin_listing_id ?? undefined,
+    clientListingId: db.client_listing_id ?? undefined,
+    propertyId: db.property_id ?? undefined,
+    leadType: db.lead_type ?? undefined,
+    temperature: (db.temperature as Lead["temperature"]) ?? undefined,
   };
 }
 
