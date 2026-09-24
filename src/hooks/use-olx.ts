@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import type { Property } from "@/data/properties";
-import { OLX_PLAN_LIMIT } from "@/lib/olx-feed";
+import { OLX_HIGHLIGHT_LIMIT, OLX_PLAN_LIMIT } from "@/lib/olx-feed";
 
 /**
  * Liga/desliga um imóvel no feed do Grupo OLX (/vrsync.xml).
@@ -48,6 +48,60 @@ export function useToggleOlxListing() {
                 olxEnabledAt: enabled ? new Date().toISOString() : undefined,
               }
             : property,
+        ),
+      );
+
+      return { previousProperties };
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousProperties) {
+        qc.setQueryData(["properties"], context.previousProperties);
+      }
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["properties"] }),
+  });
+}
+
+/**
+ * Troca o PublicationType (destaque) de um imóvel já publicado no OLX.
+ *
+ * A cota de destaques é contratada à parte das vagas do plano — mesma lógica
+ * de barreira do lado do cliente que o useToggleOlxListing já faz para
+ * OLX_PLAN_LIMIT, para não deixar marcar o 3º destaque e ele nunca ir ao ar.
+ */
+export function useSetOlxPublicationType() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, publicationType }: { id: string; publicationType: string }) => {
+      if (publicationType !== "STANDARD") {
+        const current = qc.getQueryData<Property[]>(["properties"]) ?? [];
+        const used = current.filter(
+          (property) =>
+            property.id !== id &&
+            (property.olxPublicationType ?? "STANDARD") !== "STANDARD",
+        ).length;
+        if (used >= OLX_HIGHLIGHT_LIMIT) {
+          throw new Error(
+            `O contrato permite ${OLX_HIGHLIGHT_LIMIT} imóveis em destaque. Remova um antes de adicionar outro.`,
+          );
+        }
+      }
+
+      const { error } = await supabase
+        .from("properties")
+        .update({ olx_publication_type: publicationType })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onMutate: async ({ id, publicationType }) => {
+      await qc.cancelQueries({ queryKey: ["properties"] });
+      const previousProperties = qc.getQueryData<Property[]>(["properties"]);
+
+      qc.setQueryData<Property[]>(["properties"], (current = []) =>
+        current.map((property) =>
+          property.id === id ? { ...property, olxPublicationType: publicationType } : property,
         ),
       );
 

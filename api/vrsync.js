@@ -22,6 +22,7 @@ import {
   STATE_NAMES,
   resolveFeatures,
   resolvePropertyType,
+  resolvePublicationType,
   resolveUsageType,
 } from "./_vrsync-maps.js";
 
@@ -39,6 +40,14 @@ const SITE_URL = (process.env.VITE_SITE_URL || "https://www.romolinaimoveis.com.
  * anúncio acima do plano (o portal cobraria ou recusaria o excedente).
  */
 export const OLX_PLAN_LIMIT = Number(process.env.OLX_PLAN_LIMIT) || 10;
+
+/**
+ * Cota de destaques do contrato (Destaque Padrão, Super Destaque ou algum dos
+ * Premieres), à parte das vagas do plano — o corte também acontece aqui, e não
+ * só no painel, pelo mesmo motivo do OLX_PLAN_LIMIT: uma marcação a mais no
+ * banco nunca pode virar um destaque acima do contratado.
+ */
+export const OLX_HIGHLIGHT_LIMIT = Number(process.env.OLX_HIGHLIGHT_LIMIT) || 2;
 
 /** Dados da imobiliária que vão em Header e ContactInfo. */
 const AGENCY = {
@@ -63,6 +72,7 @@ const COLUMNS = [
   "address_number", "cep", "area", "built_area", "land_area", "total_area",
   "bedrooms", "bathrooms", "suites", "parking_spots", "images", "video_url",
   "leisure", "nearby", "furnished", "created_at", "olx_enabled", "olx_enabled_at",
+  "olx_publication_type",
 ].join(",");
 
 /* ------------------------------------------------------------------ *
@@ -334,7 +344,7 @@ export function buildListing(property) {
       <ListingID>${xmlEsc(listingId(property))}</ListingID>
       <Title>${cdata(title)}</Title>
       <TransactionType>${property.purpose === "aluguel" ? "For Rent" : "For Sale"}</TransactionType>
-      <PublicationType>STANDARD</PublicationType>
+      <PublicationType>${resolvePublicationType(property.olx_publication_type)}</PublicationType>
       <DetailViewUrl>${xmlEsc(detailViewUrl)}</DetailViewUrl>
       <Media>
         ${media.join("\n        ")}
@@ -376,9 +386,18 @@ export function buildFeed(properties, { now } = {}) {
   const listings = [];
   const skipped = [];
   const seenIds = new Set();
+  // A cota de destaques respeita a ordem de chegada (mesmo desempate do
+  // OLX_PLAN_LIMIT: olx_enabled_at asc). Quem passou da cota vai ao ar mesmo
+  // assim, só sem o destaque — a marcação errada não pode tirar o anúncio do ar.
+  let highlightsRemaining = OLX_HIGHLIGHT_LIMIT;
 
   for (const property of properties) {
-    const result = buildListing(property);
+    const requestedType = resolvePublicationType(property.olx_publication_type);
+    const publicationType =
+      requestedType === "STANDARD" || highlightsRemaining > 0 ? requestedType : "STANDARD";
+    if (publicationType !== "STANDARD") highlightsRemaining -= 1;
+
+    const result = buildListing({ ...property, olx_publication_type: publicationType });
     if (result.skipped) {
       skipped.push({ titulo: property.title, tipo: property.type, pendencias: result.skipped });
       continue;

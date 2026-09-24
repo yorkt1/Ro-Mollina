@@ -70,3 +70,17 @@ export const STATE_ABBREVIATIONS = new Set([
   "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC",
   "SP", "SE", "TO",
 ]);
+
+/**
+ * Valores aceitos no elemento PublicationType (destaques do Canal Pro), com a
+ * tradução exibida no painel. Exclusivo/Superior (Premiere) só valem para
+ * contratos Zap+.
+ */
+export const PUBLICATION_TYPE_LABELS: Record<string, string> = {
+  STANDARD: "Padrão",
+  PREMIUM: "Destaque Padrão",
+  SUPER_PREMIUM: "Super destaque",
+  PREMIERE_1: "Destaque Exclusivo",
+  PREMIERE_2: "Destaque Superior",
+  TRIPLE: "Destaque Triplo",
+};

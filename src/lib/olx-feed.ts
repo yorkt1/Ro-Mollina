@@ -22,6 +22,12 @@ import {
 /** Anúncios simultâneos contratados no Canal Pro. Igual ao corte do feed. */
 export const OLX_PLAN_LIMIT = 10;
 
+/**
+ * Cota de destaques do contrato (Destaque Padrão, Super Destaque ou algum dos
+ * Premieres), à parte das vagas do plano. Igual ao corte do feed.
+ */
+export const OLX_HIGHLIGHT_LIMIT = 2;
+
 /** Mínimos da spec do VRSync. */
 const TITLE_MIN = 10;
 const DESCRIPTION_MIN = 50;

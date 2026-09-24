@@ -17,10 +17,11 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { formatPropertyPrice, propertyTypeLabel, purposeLabel, type Property } from "@/data/properties";
 import { useProperties } from "@/hooks/use-properties";
-import { useToggleOlxListing } from "@/hooks/use-olx";
+import { useSetOlxPublicationType, useToggleOlxListing } from "@/hooks/use-olx";
 import { useToast } from "@/hooks/use-toast";
 import { cloudinaryUrl } from "@/lib/cloudinary";
-import { OLX_PLAN_LIMIT, checkOlxReadiness } from "@/lib/olx-feed";
+import { OLX_HIGHLIGHT_LIMIT, OLX_PLAN_LIMIT, checkOlxReadiness } from "@/lib/olx-feed";
+import { PUBLICATION_TYPE_LABELS } from "@/lib/olx-property-types";
 
 /** Endereço que precisa ser cadastrado no Canal Pro do Grupo OLX. */
 const FEED_PATH = "/vrsync.xml";
@@ -136,6 +137,9 @@ function PropertyRow({
   blocked,
   busy,
   onToggle,
+  highlightBlocked,
+  busyPublicationType,
+  onPublicationTypeChange,
 }: {
   property: Property;
   pending: string[];
@@ -143,7 +147,12 @@ function PropertyRow({
   blocked: boolean;
   busy: boolean;
   onToggle: () => void;
+  /** Cota de destaques cheia — só bloqueia escolher um destaque novo, não manter o atual. */
+  highlightBlocked?: boolean;
+  busyPublicationType?: boolean;
+  onPublicationTypeChange?: (publicationType: string) => void;
 }) {
+  const publicationType = property.olxPublicationType ?? "STANDARD";
   return (
     <div className="flex flex-col gap-4 border-t border-border px-5 py-4 first:border-t-0 sm:flex-row sm:items-center">
       {property.images[0] ? (
@@ -182,6 +191,26 @@ function PropertyRow({
         )}
       </div>
 
+      {selected && onPublicationTypeChange && (
+        <select
+          value={publicationType}
+          disabled={busyPublicationType}
+          onChange={(e) => onPublicationTypeChange(e.target.value)}
+          className="h-9 shrink-0 self-start rounded-sm border border-border bg-background px-2 text-xs text-foreground outline-none transition-colors focus:border-accent disabled:opacity-60 sm:self-center"
+          title="Tipo de publicação no Canal Pro"
+        >
+          {Object.entries(PUBLICATION_TYPE_LABELS).map(([value, label]) => (
+            <option
+              key={value}
+              value={value}
+              disabled={value !== "STANDARD" && value !== publicationType && highlightBlocked}
+            >
+              {label}
+            </option>
+          ))}
+        </select>
+      )}
+
       <Button
         variant={selected ? "outline" : "crm"}
         size="sm"
@@ -208,6 +237,7 @@ function PropertyRow({
 export default function AdminOlxPage() {
   const { data: properties = [], isLoading, error } = useProperties();
   const toggleMutation = useToggleOlxListing();
+  const publicationTypeMutation = useSetOlxPublicationType();
   const { toast } = useToast();
 
   const [search, setSearch] = useState("");
@@ -238,6 +268,8 @@ export default function AdminOlxPage() {
   const used = selected.length;
   const live = selected.filter((p) => (readiness.get(p.id) ?? []).length === 0).length;
   const blocked = used >= OLX_PLAN_LIMIT;
+  const highlightsUsed = selected.filter((p) => (p.olxPublicationType ?? "STANDARD") !== "STANDARD").length;
+  const highlightsBlocked = highlightsUsed >= OLX_HIGHLIGHT_LIMIT;
 
   const handleToggle = async (property: Property) => {
     const enabled = !property.olxEnabled;
@@ -252,6 +284,19 @@ export default function AdminOlxPage() {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Erro desconhecido";
       toast({ title: "Não foi possível atualizar", description: message, variant: "destructive" });
+    }
+  };
+
+  const handlePublicationTypeChange = async (property: Property, publicationType: string) => {
+    try {
+      await publicationTypeMutation.mutateAsync({ id: property.id, publicationType });
+      toast({
+        title: publicationType === "STANDARD" ? "Destaque removido" : "Destaque aplicado",
+        description: `${property.title} agora está como "${PUBLICATION_TYPE_LABELS[publicationType]}" no Canal Pro.`,
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Erro desconhecido";
+      toast({ title: "Não foi possível atualizar o destaque", description: message, variant: "destructive" });
     }
   };
 
@@ -290,7 +335,7 @@ export default function AdminOlxPage() {
       </div>
 
       {/* Vagas do plano */}
-      <div className="grid gap-5 sm:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-sm border border-border bg-card p-6">
           <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Vagas do plano</p>
           <p className="mt-3 font-serif text-4xl text-foreground">
@@ -303,6 +348,16 @@ export default function AdminOlxPage() {
               style={{ width: `${Math.min(100, (used / OLX_PLAN_LIMIT) * 100)}%` }}
             />
           </div>
+        </div>
+        <div className="rounded-sm border border-border bg-card p-6">
+          <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Destaques</p>
+          <p className="mt-3 font-serif text-4xl text-foreground">
+            {highlightsUsed}
+            <span className="text-2xl text-muted-foreground">/{OLX_HIGHLIGHT_LIMIT}</span>
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Destaque Padrão, Super Destaque ou Premiere no Canal Pro
+          </p>
         </div>
         <div className="rounded-sm border border-border bg-card p-6">
           <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Anunciando</p>
@@ -364,7 +419,7 @@ export default function AdminOlxPage() {
               <p className="mt-1 text-sm text-muted-foreground">
                 {used === 0
                   ? "Nenhuma vaga ocupada — nenhum imóvel está sendo enviado ao portal."
-                  : `${used} de ${OLX_PLAN_LIMIT} vagas ocupadas.`}
+                  : `${used} de ${OLX_PLAN_LIMIT} vagas ocupadas · ${highlightsUsed} de ${OLX_HIGHLIGHT_LIMIT} destaques usados.`}
               </p>
             </div>
 
@@ -383,6 +438,11 @@ export default function AdminOlxPage() {
                     blocked={blocked}
                     busy={toggleMutation.isPending}
                     onToggle={() => void handleToggle(property)}
+                    highlightBlocked={highlightsBlocked}
+                    busyPublicationType={publicationTypeMutation.isPending}
+                    onPublicationTypeChange={(publicationType) =>
+                      void handlePublicationTypeChange(property, publicationType)
+                    }
                   />
                 ))
               )}

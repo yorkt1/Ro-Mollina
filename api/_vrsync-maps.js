@@ -242,6 +242,30 @@ export const FEATURE_MAP = [
 ];
 
 /**
+ * Valores aceitos no elemento PublicationType (destaques do Canal Pro).
+ * Chave = valor enviado no XML; valor = tradução exibida no painel.
+ *
+ * Spec: https://developers.grupozap.com/feeds/vrsync/elements/details.html
+ * (seção "Publication Type"). Exclusivo/Superior (Premiere) só valem para
+ * contratos Zap+ — isso não dá para validar aqui, é responsabilidade de quem
+ * marca o imóvel no painel.
+ */
+export const PUBLICATION_TYPES = {
+  STANDARD: "Padrão",
+  PREMIUM: "Destaque Padrão",
+  SUPER_PREMIUM: "Super destaque",
+  PREMIERE_1: "Destaque Exclusivo",
+  PREMIERE_2: "Destaque Superior",
+  TRIPLE: "Destaque Triplo",
+};
+
+/** STANDARD é o fallback seguro para valor ausente ou fora da lista fechada. */
+export function resolvePublicationType(value) {
+  const key = String(value ?? "").toUpperCase();
+  return key in PUBLICATION_TYPES ? key : "STANDARD";
+}
+
+/**
  * Varre as listas de texto livre e devolve as Features reconhecidas,
  * sem repetição e na ordem em que aparecem no mapa.
  */

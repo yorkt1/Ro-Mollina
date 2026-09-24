@@ -1,11 +1,19 @@
 import { describe, expect, it } from "vitest";
 // @ts-expect-error — função serverless em JS, sem tipos.
-import { OLX_PLAN_LIMIT as FEED_PLAN_LIMIT, buildListing } from "../../api/vrsync.js";
+import {
+  OLX_HIGHLIGHT_LIMIT as FEED_HIGHLIGHT_LIMIT,
+  OLX_PLAN_LIMIT as FEED_PLAN_LIMIT,
+  buildListing,
+} from "../../api/vrsync.js";
 // @ts-expect-error — tabelas de conversão em JS, sem tipos.
-import { PROPERTY_TYPE_MAP, STATE_NAMES } from "../../api/_vrsync-maps.js";
+import { PROPERTY_TYPE_MAP, PUBLICATION_TYPES, STATE_NAMES } from "../../api/_vrsync-maps.js";
 import type { Property } from "@/data/properties";
-import { OLX_PLAN_LIMIT, checkOlxReadiness } from "@/lib/olx-feed";
-import { STATE_ABBREVIATIONS, VRSYNC_PROPERTY_TYPE_KEYS } from "@/lib/olx-property-types";
+import { OLX_HIGHLIGHT_LIMIT, OLX_PLAN_LIMIT, checkOlxReadiness } from "@/lib/olx-feed";
+import {
+  PUBLICATION_TYPE_LABELS,
+  STATE_ABBREVIATIONS,
+  VRSYNC_PROPERTY_TYPE_KEYS,
+} from "@/lib/olx-property-types";
 
 /**
  * O painel (/admin/olx) valida o imóvel com uma cópia das regras do feed, para
@@ -79,6 +87,14 @@ function toDbShape(property: Property) {
 describe("olx — espelho das regras do feed", () => {
   it("usa o mesmo limite de anúncios do plano", () => {
     expect(OLX_PLAN_LIMIT).toBe(FEED_PLAN_LIMIT);
+  });
+
+  it("usa a mesma cota de destaques", () => {
+    expect(OLX_HIGHLIGHT_LIMIT).toBe(FEED_HIGHLIGHT_LIMIT);
+  });
+
+  it("conhece exatamente os mesmos valores de PublicationType", () => {
+    expect(Object.keys(PUBLICATION_TYPE_LABELS).sort()).toEqual(Object.keys(PUBLICATION_TYPES).sort());
   });
 
   it("conhece exatamente os mesmos tipos de imóvel do de-para do VRSync", () => {

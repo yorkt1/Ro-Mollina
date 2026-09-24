@@ -50,6 +50,8 @@ export interface Property {
   /** Publicado no Grupo OLX (OLX Imóveis / ZAP / VivaReal) via /vrsync.xml. */
   olxEnabled?: boolean;
   olxEnabledAt?: string;
+  /** PublicationType enviado ao Canal Pro — STANDARD ou um destaque, dentro da cota. */
+  olxPublicationType?: string;
 }
 
 export const formatCurrency = (value: number) =>

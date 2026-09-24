@@ -55,6 +55,7 @@ function dbToProperty(db: DbProperty): Property {
     street: db.street ?? undefined,
     olxEnabled: db.olx_enabled ?? false,
     olxEnabledAt: db.olx_enabled_at ?? undefined,
+    olxPublicationType: db.olx_publication_type ?? "STANDARD",
   };
 }
 

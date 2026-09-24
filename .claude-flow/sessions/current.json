@@ -1,0 +1,17 @@
+{
+  "id": "session-1790285939179",
+  "startedAt": "2026-09-24T21:38:59.179Z",
+  "cwd": "c:\\Users\\guilh\\Documents\\Projetos\\Ro-Mollina",
+  "context": {
+    "lastMatchedPatterns": [
+      "mem-link-preview-og-tags-----0"
+    ]
+  },
+  "metrics": {
+    "edits": 26,
+    "commands": 0,
+    "tasks": 0,
+    "errors": 0
+  },
+  "updatedAt": "2026-09-24T22:03:32.114Z"
+}

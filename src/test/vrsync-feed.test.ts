@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 // @ts-expect-error — função serverless em JS, sem tipos.
 import {
+  OLX_HIGHLIGHT_LIMIT,
   buildFeed,
   buildListing,
   clampTitle,
@@ -128,6 +129,21 @@ describe("vrsync — montagem do anúncio", () => {
     expect(xml).toContain('<Location displayAddress="Street">');
   });
 
+  it("manda PublicationType STANDARD quando o imóvel não tem destaque marcado", () => {
+    const { xml } = buildListing(validProperty());
+    expect(xml).toContain("<PublicationType>STANDARD</PublicationType>");
+  });
+
+  it("manda o destaque marcado quando é um valor válido", () => {
+    const { xml } = buildListing(validProperty({ olx_publication_type: "SUPER_PREMIUM" }));
+    expect(xml).toContain("<PublicationType>SUPER_PREMIUM</PublicationType>");
+  });
+
+  it("cai para STANDARD quando o valor de destaque é desconhecido", () => {
+    const { xml } = buildListing(validProperty({ olx_publication_type: "GOLD_VIP" }));
+    expect(xml).toContain("<PublicationType>STANDARD</PublicationType>");
+  });
+
   it("lista as pendências em vez de gerar um anúncio inválido", () => {
     const { xml, skipped } = buildListing(
       validProperty({ cep: null, images: [], area: null, land_area: null })
@@ -168,5 +184,24 @@ describe("vrsync — feed", () => {
 
     expect(incluidos).toBe(1);
     expect(excluidos[0].pendencias[0]).toContain("duplicado");
+  });
+
+  it("corta os destaques na cota, mas mantém o imóvel no feed como STANDARD", () => {
+    expect(OLX_HIGHLIGHT_LIMIT).toBe(2);
+
+    const { xml, incluidos, excluidos } = buildFeed([
+      validProperty({ id: "1", ref_code: "RM0001", olx_publication_type: "SUPER_PREMIUM" }),
+      validProperty({ id: "2", ref_code: "RM0002", olx_publication_type: "PREMIUM" }),
+      validProperty({ id: "3", ref_code: "RM0003", olx_publication_type: "TRIPLE" }),
+    ]);
+
+    // Todos os três continuam no ar — a cota derruba só o destaque, não o anúncio.
+    expect(incluidos).toBe(3);
+    expect(excluidos).toHaveLength(0);
+
+    const publicationTypes = [...xml.matchAll(/<PublicationType>(\w+)<\/PublicationType>/g)].map(
+      (match) => match[1],
+    );
+    expect(publicationTypes).toEqual(["SUPER_PREMIUM", "PREMIUM", "STANDARD"]);
   });
 });

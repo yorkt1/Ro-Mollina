@@ -1,0 +1,15 @@
+[
+  {
+    "id": "mem-link-preview-og-tags-----0",
+    "key": "-",
+    "content": "name: link-preview-og-tags\ndescription: Como funcionam os previews de link (WhatsApp/Facebook OG tags) por imóvel neste projeto\nmetadata: \n  node_type: memory\n  type: project\n  originSessionId: 10d9de4e-45b5-4f67-9478-f1eed6e744ea\n---\n\nO site é uma SPA (Vite + React) hospedada na Vercel. Previews de link (WhatsApp, Facebook, etc.) **não funcionam** via `src/components/SEO.tsx` / react-helmet-async, porque os robôs de preview não executam JavaScript — eles leem só o HTML cru.\n\nPor isso, as meta …",
+    "summary": "---",
+    "namespace": "link-preview-og-tags",
+    "type": "semantic",
+    "metadata": {
+      "sourceFile": "C:\\Users\\guilh\\.claude\\projects\\c--Users-guilh-Documents-Projetos-Ro-Mollina\\memory\\link-preview-og-tags.md",
+      "bootstrapped": true
+    },
+    "createdAt": 1790285939198
+  }
+]

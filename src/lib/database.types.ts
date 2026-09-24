@@ -51,6 +51,8 @@ export interface DbProperty {
   olx_enabled?: boolean | null;
   /** Quando a vaga foi ocupada — desempate quando há mais marcados que o plano. */
   olx_enabled_at?: string | null;
+  /** Elemento PublicationType do VRSync — STANDARD ou um destaque, dentro da cota. */
+  olx_publication_type?: string | null;
 }
 
 // Types that match the Supabase "leads" table
